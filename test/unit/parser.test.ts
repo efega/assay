@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { parse, sustituir, resolver } from "../src/parser";
+import { parse, sustituir, resolver } from "../../src/parser";
 
 test("peticion minima sin separador", () => {
   const { peticiones } = parse("GET https://api.example.com/users");

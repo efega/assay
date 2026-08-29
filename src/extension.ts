@@ -26,14 +26,14 @@ export function activate(contexto: vscode.ExtensionContext): void {
 
   contexto.subscriptions.push(
     vscode.commands.registerCommand(
-      "restfile.enviar",
+      "roost.enviar",
       (peticion?: HttpRequest, variables?: Record<string, string>) =>
         enviar(peticion, variables, salida),
     ),
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("restfile.enviarBajoCursor", () => {
+    vscode.commands.registerCommand("roost.enviarBajoCursor", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       const fichero = parse(editor.document.getText());
@@ -60,7 +60,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       return new vscode.CodeLens(rango, {
         title: `$(play) Enviar`,
         tooltip: `${peticion.metodo} ${peticion.url}`,
-        command: "restfile.enviar",
+        command: "roost.enviar",
         arguments: [peticion, fichero.variables],
       });
     });

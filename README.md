@@ -1,9 +1,8 @@
-# restfile
+# Roost
 
 Cliente HTTP para VS Code que trabaja sobre ficheros `.http` en texto plano.
 
-**Nombre provisional.** Elige el definitivo antes de publicar: cambia `name`,
-`displayName` y `publisher` en `package.json`.
+Donde vuelven tus peticiones. Ficheros de texto plano en tu repositorio.
 
 ## Por que existe
 

@@ -1,35 +1,55 @@
 {
-  "name": "restfile",
-  "displayName": "restfile",
-  "description": "Cliente HTTP local para ficheros .http. Sin cuenta, sin nube, sin limites.",
+  "name": "roost",
+  "displayName": "Roost",
+  "description": "Cliente HTTP local para ficheros .http. Tus peticiones se quedan en tu repositorio: sin cuenta, sin nube, sin limites.",
   "version": "0.0.1",
-  "publisher": "TU-PUBLISHER",
+  "publisher": "roost",
   "private": true,
   "license": "MIT",
-  "engines": { "vscode": "^1.85.0", "node": ">=18" },
-  "categories": ["Other", "Testing"],
-  "keywords": ["http", "rest", "api", "client", "curl"],
-  "main": "./out/extension.js",
-  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.85.0",
+    "node": ">=18"
+  },
+  "categories": [
+    "Other",
+    "Testing"
+  ],
+  "keywords": [
+    "http",
+    "rest",
+    "api",
+    "client",
+    "curl"
+  ],
+  "main": "./out/src/extension.js",
+  "activationEvents": [
+    "onLanguage:http"
+  ],
   "contributes": {
     "languages": [
       {
         "id": "http",
-        "aliases": ["HTTP", "http"],
-        "extensions": [".http", ".rest"],
+        "aliases": [
+          "HTTP",
+          "http"
+        ],
+        "extensions": [
+          ".http",
+          ".rest"
+        ],
         "configuration": "./language-configuration.json"
       }
     ],
     "commands": [
       {
-        "command": "restfile.enviarBajoCursor",
+        "command": "roost.enviarBajoCursor",
         "title": "Enviar peticion",
-        "category": "restfile"
+        "category": "roost"
       }
     ],
     "keybindings": [
       {
-        "command": "restfile.enviarBajoCursor",
+        "command": "roost.enviarBajoCursor",
         "key": "ctrl+alt+r",
         "mac": "cmd+alt+r",
         "when": "editorTextFocus && editorLangId == http"
@@ -39,11 +59,17 @@
   "scripts": {
     "compile": "tsc -p .",
     "watch": "tsc -p . -w",
-    "test": "tsc -p . && node --test out/test/*.test.js"
+    "test:unit": "tsc -p . && node --test out/test/unit/*.test.js",
+    "test:integration": "tsc -p . && vscode-test",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "mocha": "^11.8.0",
     "typescript": "^5.4.0"
   }
 }
