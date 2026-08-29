@@ -39,12 +39,12 @@ export function parsearEntornos(texto: string, procedencia: string): Entornos {
     bruto = JSON.parse(texto);
   } catch (error) {
     const causa = error instanceof Error ? error.message : String(error);
-    throw new ErrorDeEntorno(`${procedencia} no es JSON valido: ${causa}`);
+    throw new ErrorDeEntorno(`${procedencia} is not valid JSON: ${causa}`);
   }
 
   if (bruto === null || typeof bruto !== "object" || Array.isArray(bruto)) {
     throw new ErrorDeEntorno(
-      `${procedencia} deberia ser un objeto de entornos, como ` +
+      `${procedencia} should be an object of environments, like ` +
       `{ "dev": { "base": "..." } }.`,
     );
   }
@@ -53,7 +53,7 @@ export function parsearEntornos(texto: string, procedencia: string): Entornos {
   for (const [nombre, valores] of Object.entries(bruto as Record<string, unknown>)) {
     if (valores === null || typeof valores !== "object" || Array.isArray(valores)) {
       throw new ErrorDeEntorno(
-        `El entorno "${nombre}" de ${procedencia} deberia ser un objeto de ` +
+        `Environment "${nombre}" in ${procedencia} should be an object of ` +
         `variables.`,
       );
     }
@@ -61,8 +61,8 @@ export function parsearEntornos(texto: string, procedencia: string): Entornos {
     for (const [clave, valor] of Object.entries(valores as Record<string, unknown>)) {
       if (valor === null || typeof valor === "object") {
         throw new ErrorDeEntorno(
-          `La variable "${clave}" del entorno "${nombre}" (${procedencia}) ` +
-          `deberia ser un texto o un numero, no un objeto.`,
+          `Variable "${clave}" in environment "${nombre}" (${procedencia}) ` +
+          `should be a string or a number, not an object.`,
         );
       }
       entorno[clave] = String(valor);

@@ -41,8 +41,8 @@ export async function ejecutar(
     url = new URL(peticion.url);
   } catch {
     throw new HttpError(
-      `URL no valida: ${peticion.url}. ` +
-      `Si usas variables, comprueba que estan declaradas con @nombre = valor.`,
+      `Invalid URL: ${peticion.url}. ` +
+      `If you are using variables, check they are declared with @name = value.`,
     );
   }
 
@@ -78,10 +78,10 @@ export async function ejecutar(
     };
   } catch (error) {
     if (control.signal.aborted) {
-      throw new HttpError(`La peticion supero el limite de ${timeoutMs / 1000} s.`, error);
+      throw new HttpError(`Request timed out after ${timeoutMs / 1000}s.`, error);
     }
     const causa = error instanceof Error ? error.message : String(error);
-    throw new HttpError(`No se pudo conectar con ${url.host}: ${causa}`, error);
+    throw new HttpError(`Could not reach ${url.host}: ${causa}`, error);
   } finally {
     clearTimeout(temporizador);
   }

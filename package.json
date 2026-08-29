@@ -1,7 +1,7 @@
 {
   "name": "roost",
-  "displayName": "Roost",
-  "description": "Cliente HTTP local para ficheros .http. Tus peticiones se quedan en tu repositorio: sin cuenta, sin nube, sin limites.",
+  "displayName": "Roost \u2014 HTTP client with tests",
+  "description": "Run .http files, assert on the response, chain requests. No account, no cloud, no limits.",
   "version": "0.0.1",
   "publisher": "roost",
   "private": true,
@@ -11,15 +11,31 @@
     "node": ">=18"
   },
   "categories": [
-    "Other",
-    "Testing"
+    "Testing",
+    "Programming Languages",
+    "Other"
   ],
   "keywords": [
+    "curl",
+    "http file",
+    "rest file",
+    "endpoint testing",
     "http",
     "rest",
     "api",
-    "client",
-    "curl"
+    "api client",
+    "http client",
+    "rest client",
+    "api testing",
+    "testing",
+    "assertions",
+    "request",
+    "postman",
+    "insomnia",
+    "thunder client",
+    "bruno",
+    "graphql",
+    "openapi"
   ],
   "main": "./out/src/extension.js",
   "activationEvents": [
@@ -43,17 +59,17 @@
     "commands": [
       {
         "command": "roost.enviarBajoCursor",
-        "title": "Enviar peticion",
+        "title": "Send request",
         "category": "Roost"
       },
       {
         "command": "roost.limpiarCadena",
-        "title": "Reiniciar cadena (descartar respuestas guardadas)",
+        "title": "Reset chain (discard saved responses)",
         "category": "Roost"
       },
       {
         "command": "roost.seleccionarEntorno",
-        "title": "Seleccionar entorno",
+        "title": "Select environment",
         "category": "Roost"
       }
     ],
@@ -64,14 +80,31 @@
         "mac": "cmd+alt+r",
         "when": "editorTextFocus && editorLangId == http"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Roost",
+      "properties": {
+        "roost.timeoutMs": {
+          "type": "number",
+          "default": 30000,
+          "minimum": 1000,
+          "description": "How long to wait for a response, in milliseconds."
+        },
+        "roost.redactSecrets": {
+          "type": "boolean",
+          "default": true,
+          "description": "Mask credential-looking query parameters and headers in the response panel and log."
+        }
+      }
+    }
   },
   "scripts": {
     "compile": "tsc -p .",
     "watch": "tsc -p . -w",
     "test:unit": "tsc -p . && node --test out/test/unit/*.test.js",
     "test:integration": "tsc -p . && vscode-test",
-    "test": "npm run test:unit && npm run test:integration"
+    "test": "npm run test:unit && npm run test:integration",
+    "vsce:package": "npm test && npx --yes @vscode/vsce package --no-dependencies"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
@@ -81,5 +114,11 @@
     "@vscode/test-electron": "^3.1.0",
     "mocha": "^11.8.0",
     "typescript": "^5.4.0"
-  }
+  },
+  "galleryBanner": {
+    "color": "#1F2A24",
+    "theme": "dark"
+  },
+  "qna": "marketplace",
+  "badges": []
 }

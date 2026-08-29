@@ -82,7 +82,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
       // La peticion activa es la ultima que empieza en o antes del cursor.
       const peticion = [...fichero.peticiones].reverse().find((p) => p.linea <= linea);
       if (!peticion) {
-        void vscode.window.showWarningMessage("No hay ninguna peticion en el cursor.");
+        void vscode.window.showWarningMessage("No request found at the cursor.");
         return;
       }
       void enviar(peticion, fichero, editor.document.uri, salida, entornos);
@@ -94,8 +94,8 @@ export function activate(contexto: vscode.ExtensionContext): void {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       almacenes.get(editor.document.uri.toString())?.limpiar();
-      salida.appendLine("Respuestas encadenadas descartadas.");
-      void vscode.window.showInformationMessage("Roost: cadena reiniciada.");
+      salida.appendLine("Chained responses cleared.");
+      void vscode.window.showInformationMessage("Roost: chain reset.");
     }),
   );
 }
@@ -107,7 +107,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       const linea = Math.min(peticion.lineaPeticion, documento.lineCount - 1);
       const rango = documento.lineAt(linea).range;
       return new vscode.CodeLens(rango, {
-        title: `$(play) Enviar`,
+        title: `$(play) Send`,
         tooltip: `${peticion.metodo} ${peticion.url}`,
         command: "roost.enviar",
         arguments: [peticion, fichero, documento.uri],
@@ -177,7 +177,7 @@ async function enviar(
         if (informe) salida.appendLine(informe);
         if (fallan > 0) {
           void vscode.window.showWarningMessage(
-            `${fallan} de ${resultados.length} asertos fallan en ` +
+            `${fallan} of ${resultados.length} assertions failed in ` +
             `${peticion.nombre ?? acortar(redactarUrl(peticion.url), 40)}.`,
           );
         }
@@ -185,7 +185,7 @@ async function enviar(
         const mensaje =
           error instanceof ErrorDeCadena || error instanceof HttpError
             ? error.message
-            : `Fallo inesperado: ${String(error)}`;
+            : `Unexpected failure: ${String(error)}`;
         salida.appendLine(`${peticion.metodo} ${redactarUrl(peticion.url)} -> ${mensaje}`);
         void vscode.window.showErrorMessage(mensaje);
       }

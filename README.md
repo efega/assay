@@ -1,122 +1,66 @@
 # Roost
 
-Cliente HTTP para VS Code que trabaja sobre ficheros `.http` en texto plano.
+**An HTTP client for VS Code that tests your API — and never holds your work hostage.**
 
-Donde vuelven tus peticiones. Ficheros de texto plano en tu repositorio.
-
-## Por que existe
-
-Sale de medir el nicho, no de intuirlo. Los datos estan en
-[`../research/HALLAZGOS.md`](../research/HALLAZGOS.md). En resumen:
-
-| Producto | Nota | Falla en | % de negativas |
-|---|---:|---|---:|
-| REST Client | 4,79 | abandonado 4 anyos, sin funciones profesionales | — |
-| Thunder Client | 1,17 | muro de pago retroactivo | 48 % |
-| Postman oficial | 1,25 (2026) | cuenta obligatoria | 51 % |
-| Bruno | 3,84 | cuelgues | 90 % |
-
-Dos bases de 7,5 millones de instalaciones cada una: una sobre una herramienta
-querida y muerta, otra sobre una de pago y detestada. Y los usuarios dicen
-literalmente que pagarian:
-
-> *"I'll pay for a good tool, but don't string me along, then pull the rug out."*
-
-## Las cinco reglas
-
-Cada una responde a una queja medida. Las cuatro primeras evitan acabar con
-1,17 de nota; la quinta es la unica que genera ingresos.
-
-1. **Nunca cobrar por datos que el usuario ya creo.** Sus peticiones son suyas
-   y siempre accesibles.
-2. **Exportacion siempre libre, en formato abierto.**
-3. **Sin cuenta obligatoria, sin nube forzada.** Todo local.
-4. **El nivel gratuito tiene que ser util de verdad**, y funcionar en Remote,
-   WSL y Web.
-5. **Cobrar por lo que anyade, no por lo que quita:** tests, ejecucion
-   encadenada, entornos y runner de CI.
-
-## Estado
-
-Funciona el nucleo gratuito:
-
-- [x] Parser del formato `.http` compatible con REST Client
-- [x] Variables de fichero `@nombre = valor` y `{{sustitucion}}`, encadenables
-- [x] CodeLens "Enviar" sobre cada peticion, y `Ctrl+Alt+R`
-- [x] Respuesta en panel lateral con tiempo y tamanyo
-- [x] **Asertos sobre la respuesta**     <- 59 votos, 7,9 anyos pedido
-- [x] **Ejecucion encadenada**           <- 54 votos, 5,7 anyos pedido
-- [x] **Entornos** (`http-client.env.json`)
-- [ ] Runner de linea de comandos        <- 44 votos, 6,9 anyos pedido
-- [ ] `text/event-stream` (SSE)          <- 44 votos, 6,6 anyos pedido
-
-## Asertos
-
-La peticion mas votada de REST Client (59 votos, abierta desde hace casi ocho
-anyos), y la funcion por la que cobran Postman e Insomnia. Se declaran en el
-propio fichero:
+Plain `.http` files. No account. No cloud. No request limits. Your requests
+live in your repo, next to the code they test.
 
 ```http
-### Login
+@base = https://api.example.com
+
+### Log in
 # @name login
+POST {{base}}/auth
+Content-Type: application/json
+
+{ "user": "ana", "password": "{{password}}" }
+
+### Use the token — login runs automatically if it hasn't yet
+GET {{base}}/me
+Authorization: Bearer {{login.response.body.$.token}}
+
 # @assert status 200
+# @assert time < 500
+# @assert body.$.roles.length > 0
+```
+
+Press **Send** above any request, or `Ctrl+Alt+R`.
+
+## Why another one
+
+| | |
+|---|---|
+| **Assertions built in** | Check status, timing, headers and JSON paths. Declarative — no scripting sandbox, and the diff reads clean in code review. |
+| **Request chaining** | Use one response in the next request. Dependencies run on their own, with cycle detection and a depth limit. |
+| **Environments** | Standard `http-client.env.json`. Secrets go in a separate file that stays out of git — and Roost tells you if it isn't ignored yet. |
+| **Nothing is paywalled retroactively** | Your saved requests are yours. Export is always free. That is a promise, not a tier. |
+
+## Compatible with your existing files
+
+Roost reads the same `.http` syntax as REST Client: `###` separators,
+`@variables`, `# @name`, `{{substitution}}` and
+`{{name.response.body.$.path}}` chaining. Point it at the files you already
+have and they work.
+
+## Assertions
+
+```http
+# @assert status 200
+# @assert status < 300
 # @assert time < 1000
 # @assert header.content-type contains json
 # @assert body.$.token exists
 # @assert body.$.items.length > 0
-POST {{base}}/login
+# @assert body.$.name matches ^ana
 ```
 
-Objetivos: `status`, `time`, `bytes`, `header.<nombre>`, `body.<ruta>`.
-Operadores: `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains`, `matches`, `exists`,
-`empty`. Sin operador se asume igualdad.
+Targets: `status`, `time`, `bytes`, `header.<name>`, `body.<path>`.
+Operators: `=` `!=` `<` `<=` `>` `>=` `contains` `matches` `exists` `empty`.
+Omit the operator for equality. Assertions work anywhere in the block.
 
-Es declarativo a proposito, no un bloque de script: no hay sandbox que
-asegurar, no arrastra dependencias, y el diff en git se lee de un vistazo.
+## Environments
 
-## Encadenamiento
-
-Una peticion puede usar la respuesta de otra. Si la dependencia no se ha
-lanzado, se lanza sola:
-
-```http
-### Login
-# @name login
-POST {{base}}/login
-
-### Perfil
-GET {{base}}/me
-Authorization: Bearer {{login.response.body.$.token}}
-# @assert status 200
-```
-
-Referencias disponibles: `{{nombre.response.body.$.ruta}}`,
-`{{nombre.response.headers.<cabecera>}}` y `{{nombre.response.status}}`.
-Sintaxis de REST Client, para no romper la compatibilidad.
-
-Las respuestas se guardan en memoria por fichero y **se descartan en cuanto
-editas el documento**, para no arrastrar un token viejo sin darte cuenta.
-Tambien hay un comando *Roost: reiniciar cadena*.
-
-### Decisiones de seguridad
-
-Son deliberadas y estan probadas:
-
-- **Deteccion de ciclos.** A que depende de B que depende de A falla nombrando
-  el ciclo, en lugar de colgarse.
-- **Profundidad maxima de 5.** Un fichero mal escrito no puede disparar
-  trafico en cascada sin limite.
-- **Los valores resueltos no se registran nunca.** En el panel se ve la
-  referencia (`login.response.body.$.token`), no su valor. Un token que
-  aparece en un registro acaba en una captura o en un fichero commiteado.
-- **Redaccion de secretos.** Los parametros de query y las cabeceras cuyo
-  nombre parece credencial (`token`, `api_key`, `authorization`, ...) se
-  muestran como `***`.
-
-## Entornos
-
-Formato `http-client.env.json`, el mismo de REST Client e IntelliJ, asi que un
-fichero existente funciona sin tocarlo:
+`http-client.env.json`, committed with the project:
 
 ```json
 {
@@ -125,28 +69,39 @@ fichero existente funciona sin tocarlo:
 }
 ```
 
-Se elige desde la barra de estado. Las variables del propio `.http` siguen
-mandando sobre las del entorno, como en REST Client.
+`http-client.private.env.json`, never committed:
 
-**Los secretos van aparte**, en `http-client.private.env.json`, que pisa al
-publico para las mismas claves. Asi el fichero de entornos se commitea sin
-miedo y el de credenciales no sale de tu maquina.
-
-Y si ese fichero tiene secretos y **no esta en `.gitignore`, Roost avisa y se
-ofrece a anyadirlo**. Es el peor fallo posible en una herramienta que presume
-de guardar tus credenciales en local, asi que se comprueba solo.
-
-## Desarrollo
-
-Node vive dentro del proyecto en `.node/` (ignorado por git), asi que no hace
-falta instalarlo en el sistema.
-
-```bash
-export PATH="$PWD/.node/node-v22.14.0-win-x64:$PATH"
-npm install
-npm test          # compila y ejecuta los tests del parser
-npm run compile
+```json
+{ "dev": { "password": "the-real-one" } }
 ```
 
-Para probarla en el editor: F5 abre una ventana de desarrollo con la extension
-cargada. Abre `samples/ejemplo.http`.
+Pick the active one from the status bar. Values in the private file win.
+Variables declared in the `.http` file itself still take precedence, so
+existing files keep behaving exactly as before.
+
+## Your credentials stay on your machine
+
+- No account, ever. Nothing to sign up for.
+- No cloud sync, no telemetry, no phoning home.
+- Resolved secrets are **never written to the log**. You see the reference
+  (`login.response.body.$.token`), not its value.
+- Query parameters and headers that look like credentials are shown as `***`.
+- Chained responses are dropped as soon as you edit the file, so a stale token
+  never travels silently.
+
+## Commands
+
+| Command | |
+|---|---|
+| `Roost: Send request` | `Ctrl+Alt+R` (`Cmd+Alt+R` on macOS) |
+| `Roost: Select environment` | Also on the status bar |
+| `Roost: Reset chain` | Discards saved responses |
+
+## Status
+
+Early, and honest about it. Working today: parsing, variables, environments,
+assertions, chaining, secret redaction. Not yet: server-sent events, GraphQL
+helpers, cookie jar, a CLI runner for CI.
+
+Missing something? Open an issue — the roadmap is driven by what people
+actually ask for.

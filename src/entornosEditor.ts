@@ -69,7 +69,7 @@ export class GestorDeEntornos {
     this.barra = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right, 100);
     this.barra.command = "roost.seleccionarEntorno";
-    this.barra.tooltip = "Roost: entorno activo";
+    this.barra.tooltip = "Roost: active environment";
     contexto.subscriptions.push(this.barra);
     this.refrescarBarra();
   }
@@ -109,23 +109,23 @@ export class GestorDeEntornos {
 
     const nombres = nombresDe(cargados.publico, cargados.privado);
     if (nombres.length === 0) {
-      const crear = "Crear http-client.env.json";
+      const crear = "Create http-client.env.json";
       const respuesta = await vscode.window.showInformationMessage(
-        `No hay entornos. Se declaran en ${FICHERO_PUBLICO}, junto al fichero .http.`,
+        `No environments found. Declare them in ${FICHERO_PUBLICO}, next to your .http file.`,
         crear,
       );
       if (respuesta === crear) await this.crearPlantilla(editor.document.uri);
       return;
     }
 
-    const NINGUNO = "$(circle-slash) Ninguno";
+    const NINGUNO = "$(circle-slash) None";
     const opciones = [
       NINGUNO,
       ...nombres.map((n) => (n === this.seleccion ? `$(check) ${n}` : `$(globe) ${n}`)),
     ];
     const elegido = await vscode.window.showQuickPick(opciones, {
-      title: "Roost: entorno activo",
-      placeHolder: "Las variables del fichero .http siguen teniendo prioridad",
+      title: "Roost: active environment",
+      placeHolder: "Variables in the .http file still take precedence",
     });
     if (elegido === undefined) return;
 
@@ -134,13 +134,13 @@ export class GestorDeEntornos {
       : elegido.replace(/^\$\([\w-]+\)\s*/, "");
     await this.contexto.workspaceState.update(CLAVE_SELECCION, this.seleccion);
     this.refrescarBarra();
-    this.salida.appendLine(`Entorno: ${this.seleccion ?? "ninguno"}`);
+    this.salida.appendLine(`Environment: ${this.seleccion ?? "none"}`);
   }
 
   private refrescarBarra(): void {
     this.barra.text = this.seleccion
       ? `$(globe) ${this.seleccion}`
-      : "$(globe) sin entorno";
+      : "$(globe) no environment";
     this.barra.show();
   }
 
@@ -155,7 +155,7 @@ export class GestorDeEntornos {
       destino, Buffer.from(JSON.stringify(plantilla, null, 2) + "\n", "utf8"));
     await vscode.window.showTextDocument(destino);
     void vscode.window.showInformationMessage(
-      `Los secretos van en ${FICHERO_PRIVADO}, que debe estar en .gitignore.`,
+      `Put secrets in ${FICHERO_PRIVADO} and add it to .gitignore.`,
     );
   }
 
@@ -179,10 +179,10 @@ export class GestorDeEntornos {
     const texto = await leer(gitignore) ?? "";
     if (estaIgnorado(texto, FICHERO_PRIVADO)) return;
 
-    const anyadir = "Anyadir a .gitignore";
+    const anyadir = "Add to .gitignore";
     const respuesta = await vscode.window.showWarningMessage(
-      `${FICHERO_PRIVADO} tiene secretos y no esta en .gitignore.`,
-      anyadir, "Ahora no",
+      `${FICHERO_PRIVADO} contains secrets and is not in .gitignore.`,
+      anyadir, "Not now",
     );
     if (respuesta !== anyadir) return;
 
@@ -191,6 +191,6 @@ export class GestorDeEntornos {
       gitignore,
       Buffer.from(`${texto}${sufijo}${FICHERO_PRIVADO}\n`, "utf8"),
     );
-    this.salida.appendLine(`${FICHERO_PRIVADO} anyadido a .gitignore`);
+    this.salida.appendLine(`${FICHERO_PRIVADO} added to .gitignore`);
   }
 }

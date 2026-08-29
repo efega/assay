@@ -123,7 +123,7 @@ export function valorDe(ref: Referencia, almacen: Almacen): string {
   const guardada = almacen.obtener(ref.peticion);
   if (!guardada) {
     throw new ErrorDeCadena(
-      `La peticion "${ref.peticion}" no se ha ejecutado todavia.`,
+      `Request "${ref.peticion}" has not run yet.`,
     );
   }
 
@@ -132,13 +132,13 @@ export function valorDe(ref: Referencia, almacen: Almacen): string {
   if (ref.parte === "headers") {
     if (!ref.ruta) {
       throw new ErrorDeCadena(
-        `Falta el nombre de la cabecera en ${ref.bruto}.`,
+        `Missing header name in ${ref.bruto}.`,
       );
     }
     const valor = guardada.cabeceras[ref.ruta.toLowerCase()];
     if (valor === undefined) {
       throw new ErrorDeCadena(
-        `"${ref.peticion}" no devolvio la cabecera "${ref.ruta}".`,
+        `"${ref.peticion}" did not return header "${ref.ruta}".`,
       );
     }
     return valor;
@@ -149,7 +149,7 @@ export function valorDe(ref: Referencia, almacen: Almacen): string {
   const valor = resolverRuta(comoJson(guardada.cuerpo), ref.ruta);
   if (valor === AUSENTE) {
     throw new ErrorDeCadena(
-      `La ruta "${ref.ruta}" no existe en la respuesta de "${ref.peticion}".`,
+      `Path "${ref.ruta}" not found in the response from "${ref.peticion}".`,
     );
   }
   return aTexto(valor);
@@ -199,8 +199,8 @@ export async function resolverDependencias(
 ): Promise<ResultadoCadena> {
   if (camino.length > MAX_PROFUNDIDAD) {
     throw new ErrorDeCadena(
-      `Cadena demasiado larga (mas de ${MAX_PROFUNDIDAD} peticiones): ` +
-      `${camino.join(" -> ")}. Revisa las dependencias del fichero.`,
+      `Chain too long (more than ${MAX_PROFUNDIDAD} requests): ` +
+      `${camino.join(" -> ")}. Check the dependencies in this file.`,
     );
   }
 
@@ -211,15 +211,15 @@ export async function resolverDependencias(
 
     if (camino.includes(ref.peticion)) {
       throw new ErrorDeCadena(
-        `Dependencia circular: ${[...camino, ref.peticion].join(" -> ")}.`,
+        `Circular dependency: ${[...camino, ref.peticion].join(" -> ")}.`,
       );
     }
 
     const dependencia = fichero.peticiones.find((p) => p.nombre === ref.peticion);
     if (!dependencia) {
       throw new ErrorDeCadena(
-        `No hay ninguna peticion llamada "${ref.peticion}" en este fichero. ` +
-        `Ponle nombre con "# @name ${ref.peticion}".`,
+        `No request named "${ref.peticion}" in this file. ` +
+        `Name it with "# @name ${ref.peticion}".`,
       );
     }
 

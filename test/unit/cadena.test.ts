@@ -70,15 +70,15 @@ test("errores utiles cuando algo no esta", () => {
 
   assert.throws(
     () => valorDe(referencias("{{otra.response.body.$.x}}")[0], a),
-    (e: Error) => e instanceof ErrorDeCadena && /no se ha ejecutado/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /has not run yet/.test(e.message),
   );
   assert.throws(
     () => valorDe(referencias("{{login.response.body.$.noexiste}}")[0], a),
-    (e: Error) => e instanceof ErrorDeCadena && /no existe en la respuesta/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /not found in the response/.test(e.message),
   );
   assert.throws(
     () => valorDe(referencias("{{login.response.headers.x-falta}}")[0], a),
-    (e: Error) => e instanceof ErrorDeCadena && /no devolvio la cabecera/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /did not return header/.test(e.message),
   );
 });
 
@@ -169,7 +169,7 @@ test("dependencia circular falla nombrando el ciclo, sin colgarse", async () => 
   await assert.rejects(
     () => resolverDependencias(
       fichero.peticiones[0], fichero, new Almacen(), ejecutorSimulado({}, []), (p) => p),
-    (e: Error) => e instanceof ErrorDeCadena && /circular/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /[Cc]ircular/.test(e.message),
   );
 });
 
@@ -181,7 +181,7 @@ test("una peticion que se referencia a si misma tambien es ciclo", async () => {
   await assert.rejects(
     () => resolverDependencias(
       fichero.peticiones[0], fichero, new Almacen(), ejecutorSimulado({}, []), (p) => p),
-    (e: Error) => e instanceof ErrorDeCadena && /circular/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /[Cc]ircular/.test(e.message),
   );
 });
 
@@ -201,7 +201,7 @@ test("cadena mas larga que el limite se corta", async () => {
     () => resolverDependencias(
       fichero.peticiones[eslabones - 1], fichero, new Almacen(),
       ejecutorSimulado({}, []), (p) => p),
-    (e: Error) => e instanceof ErrorDeCadena && /demasiado larga/.test(e.message),
+    (e: Error) => e instanceof ErrorDeCadena && /too long/.test(e.message),
   );
 });
 

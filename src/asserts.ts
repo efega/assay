@@ -133,14 +133,14 @@ export function evaluar(aserto: Aserto, respuesta: HttpResponse): ResultadoAsert
       try {
         return { ...base, ok: new RegExp(aserto.esperado ?? "").test(aTexto(valor)) };
       } catch {
-        return { ...base, ok: false, motivo: `expresion regular no valida: ${aserto.esperado}` };
+        return { ...base, ok: false, motivo: `invalid regular expression: ${aserto.esperado}` };
       }
     }
 
     case "<": case "<=": case ">": case ">=": {
       const par = comparaNumeros(valor, aserto.esperado);
       if (!par) {
-        return { ...base, ok: false, motivo: "se esperaban dos numeros" };
+        return { ...base, ok: false, motivo: "expected two numbers" };
       }
       const [x, y] = par;
       const ok =
@@ -164,12 +164,12 @@ export function resumir(resultados: ResultadoAserto[]): string {
   if (resultados.length === 0) return "";
   const fallan = resultados.filter((r) => !r.ok);
   const lineas = resultados.map((r) => {
-    const marca = r.ok ? "PASA" : "FALLA";
+    const marca = r.ok ? "PASS" : "FAIL";
     const detalle = r.ok ? "" : `  -> ${r.obtenido}${r.motivo ? ` (${r.motivo})` : ""}`;
     return `  ${marca}  ${r.aserto.origen}${detalle}`;
   });
   const cabecera = fallan.length === 0
-    ? `${resultados.length}/${resultados.length} asertos pasan`
-    : `${fallan.length} de ${resultados.length} asertos fallan`;
+    ? `${resultados.length}/${resultados.length} assertions passed`
+    : `${fallan.length} of ${resultados.length} assertions failed`;
   return [cabecera, ...lineas].join("\n");
 }

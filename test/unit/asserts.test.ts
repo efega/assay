@@ -76,13 +76,13 @@ test("matches con expresion regular", () => {
 test("regex invalida no revienta, falla con motivo", () => {
   const r = evaluar(parseAserto("# @assert body.$.token matches [")!, RESP);
   assert.equal(r.ok, false);
-  assert.match(r.motivo ?? "", /no valida/);
+  assert.match(r.motivo ?? "", /invalid regular/);
 });
 
 test("comparar algo no numerico da motivo claro", () => {
   const r = evaluar(parseAserto("# @assert body.$.token < 10")!, RESP);
   assert.equal(r.ok, false);
-  assert.match(r.motivo ?? "", /numeros/);
+  assert.match(r.motivo ?? "", /two numbers/);
 });
 
 test("el parser recoge los asertos del bloque", () => {
@@ -122,9 +122,9 @@ test("resumen legible", () => {
     parseAserto("# @assert status 500")!,
   ];
   const texto = resumir(evaluarTodos(asertos, RESP));
-  assert.match(texto, /1 de 2 asertos fallan/);
-  assert.match(texto, /PASA {2}status 200/);
-  assert.match(texto, /FALLA {2}status 500/);
+  assert.match(texto, /1 of 2 assertions failed/);
+  assert.match(texto, /PASS {2}status 200/);
+  assert.match(texto, /FAIL {2}status 500/);
 });
 
 test("rutas: indices, comillas y length", () => {
