@@ -1,0 +1,67 @@
+# restfile
+
+Cliente HTTP para VS Code que trabaja sobre ficheros `.http` en texto plano.
+
+**Nombre provisional.** Elige el definitivo antes de publicar: cambia `name`,
+`displayName` y `publisher` en `package.json`.
+
+## Por que existe
+
+Sale de medir el nicho, no de intuirlo. Los datos estan en
+[`../research/HALLAZGOS.md`](../research/HALLAZGOS.md). En resumen:
+
+| Producto | Nota | Falla en | % de negativas |
+|---|---:|---|---:|
+| REST Client | 4,79 | abandonado 4 anyos, sin funciones profesionales | — |
+| Thunder Client | 1,17 | muro de pago retroactivo | 48 % |
+| Postman oficial | 1,25 (2026) | cuenta obligatoria | 51 % |
+| Bruno | 3,84 | cuelgues | 90 % |
+
+Dos bases de 7,5 millones de instalaciones cada una: una sobre una herramienta
+querida y muerta, otra sobre una de pago y detestada. Y los usuarios dicen
+literalmente que pagarian:
+
+> *"I'll pay for a good tool, but don't string me along, then pull the rug out."*
+
+## Las cinco reglas
+
+Cada una responde a una queja medida. Las cuatro primeras evitan acabar con
+1,17 de nota; la quinta es la unica que genera ingresos.
+
+1. **Nunca cobrar por datos que el usuario ya creo.** Sus peticiones son suyas
+   y siempre accesibles.
+2. **Exportacion siempre libre, en formato abierto.**
+3. **Sin cuenta obligatoria, sin nube forzada.** Todo local.
+4. **El nivel gratuito tiene que ser util de verdad**, y funcionar en Remote,
+   WSL y Web.
+5. **Cobrar por lo que anyade, no por lo que quita:** tests, ejecucion
+   encadenada, entornos y runner de CI.
+
+## Estado
+
+Funciona el nucleo gratuito:
+
+- [x] Parser del formato `.http` compatible con REST Client
+- [x] Variables de fichero `@nombre = valor` y `{{sustitucion}}`, encadenables
+- [x] CodeLens "Enviar" sobre cada peticion, y `Ctrl+Alt+R`
+- [x] Respuesta en panel lateral con tiempo y tamanyo
+- [ ] Entornos (`http-client.env.json`)
+- [ ] Asertos sobre la respuesta        <- 59 votos, 7,9 anyos pedido
+- [ ] Ejecucion encadenada de peticiones <- 54 votos, 5,7 anyos pedido
+- [ ] Runner de linea de comandos        <- 44 votos, 6,9 anyos pedido
+- [ ] `text/event-stream` (SSE)          <- 44 votos, 6,6 anyos pedido
+
+## Desarrollo
+
+Node vive dentro del proyecto en `.node/` (ignorado por git), asi que no hace
+falta instalarlo en el sistema.
+
+```bash
+export PATH="$PWD/.node/node-v22.14.0-win-x64:$PATH"
+npm install
+npm test          # compila y ejecuta los tests del parser
+npm run compile
+```
+
+Para probarla en el editor: F5 abre una ventana de desarrollo con la extension
+cargada. Abre `samples/ejemplo.http`.

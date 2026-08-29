@@ -1,0 +1,28 @@
+# Fichero de ejemplo. Texto plano, versionable en git, tuyo.
+# Pulsa "Enviar" sobre cualquier peticion, o Ctrl+Alt+R con el cursor dentro.
+
+@base = https://httpbin.org
+@token = un-token-de-ejemplo
+
+### Consulta simple con parametros
+GET {{base}}/get
+  ?rol=admin
+  &activo=true
+Accept: application/json
+
+### Peticion con cabecera de autorizacion
+# @name perfil
+GET {{base}}/bearer
+Authorization: Bearer {{token}}
+
+### Envio de JSON
+POST {{base}}/post
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "rol": "admin"
+}
+
+### Comprobar un codigo de error
+GET {{base}}/status/404

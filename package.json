@@ -1,0 +1,49 @@
+{
+  "name": "restfile",
+  "displayName": "restfile",
+  "description": "Cliente HTTP local para ficheros .http. Sin cuenta, sin nube, sin limites.",
+  "version": "0.0.1",
+  "publisher": "TU-PUBLISHER",
+  "private": true,
+  "license": "MIT",
+  "engines": { "vscode": "^1.85.0", "node": ">=18" },
+  "categories": ["Other", "Testing"],
+  "keywords": ["http", "rest", "api", "client", "curl"],
+  "main": "./out/extension.js",
+  "activationEvents": [],
+  "contributes": {
+    "languages": [
+      {
+        "id": "http",
+        "aliases": ["HTTP", "http"],
+        "extensions": [".http", ".rest"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "restfile.enviarBajoCursor",
+        "title": "Enviar peticion",
+        "category": "restfile"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "restfile.enviarBajoCursor",
+        "key": "ctrl+alt+r",
+        "mac": "cmd+alt+r",
+        "when": "editorTextFocus && editorLangId == http"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -p . -w",
+    "test": "tsc -p . && node --test out/test/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
