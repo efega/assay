@@ -151,3 +151,66 @@ test("las peticiones apuntan a la linea correcta para el CodeLens", () => {
       `lineaPeticion=${p.lineaPeticion} apunta a "${lineas[p.lineaPeticion]}"`);
   }
 });
+
+// --- finales de linea de Windows -------------------------------------------
+// El proyecto se desarrolla en Windows y git normaliza a CRLF al hacer
+// checkout, asi que los .http reales llegaran con \r\n. Si el \r se cuela en
+// una cabecera o en el cuerpo, la peticion sale mal por la red.
+
+const CRLF = String.fromCharCode(13, 10);
+
+test("CRLF: cabeceras y cuerpo salen sin retorno de carro", () => {
+  const { peticiones } = parse([
+    "### Crear",
+    "# @name crear",
+    "# @assert status 201",
+    "POST https://x.dev/users",
+    "Content-Type: application/json",
+    "Authorization: Bearer abc",
+    "",
+    '{"a": 1}',
+  ].join(CRLF));
+
+  const p = peticiones[0];
+  assert.equal(p.metodo, "POST");
+  assert.equal(p.url, "https://x.dev/users", "la URL no puede llevar \r");
+  assert.equal(p.cabeceras["Content-Type"], "application/json");
+  assert.equal(p.cabeceras["Authorization"], "Bearer abc");
+  assert.equal(p.cuerpo, '{"a": 1}');
+  assert.equal(p.nombre, "crear");
+  assert.equal(p.asertos.length, 1);
+
+  for (const [clave, valor] of Object.entries(p.cabeceras)) {
+    assert.doesNotMatch(clave, /\r/, "clave de cabecera con \r");
+    assert.doesNotMatch(valor, /\r/, "valor de cabecera con \r");
+  }
+  assert.doesNotMatch(p.cuerpo ?? "", /\r/);
+});
+
+test("CRLF: variables y separadores", () => {
+  const fichero = parse([
+    "@base = https://x.dev",
+    "",
+    "### Uno",
+    "GET {{base}}/a",
+    "",
+    "### Dos",
+    "GET {{base}}/b",
+  ].join(CRLF));
+
+  assert.equal(fichero.variables.base, "https://x.dev", "la variable no puede llevar \r");
+  assert.equal(fichero.peticiones.length, 2);
+  assert.equal(resolver(fichero.peticiones[0], fichero.variables).url, "https://x.dev/a");
+});
+
+test("CRLF: cuerpo multilinea conserva la forma", () => {
+  const { peticiones } = parse([
+    "POST https://x.dev/a",
+    "Content-Type: application/json",
+    "",
+    "{",
+    '  "a": 1',
+    "}",
+  ].join(CRLF));
+  assert.equal(peticiones[0].cuerpo, '{\n  "a": 1\n}');
+});

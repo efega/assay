@@ -85,7 +85,10 @@ existing files keep behaving exactly as before.
 - No cloud sync, no telemetry, no phoning home.
 - Resolved secrets are **never written to the log**. You see the reference
   (`login.response.body.$.token`), not its value.
-- Query parameters and headers that look like credentials are shown as `***`.
+- Query parameters and headers that look like credentials are shown as `***`
+  — including `set-cookie`, where the session usually travels.
+- Values from your private environment file are masked **anywhere they appear**,
+  including inside a response body, because servers do echo back what you sent.
 - Chained responses are dropped as soon as you edit the file, so a stale token
   never travels silently.
 
@@ -102,6 +105,14 @@ existing files keep behaving exactly as before.
 Early, and honest about it. Working today: parsing, variables, environments,
 assertions, chaining, secret redaction. Not yet: server-sent events, GraphQL
 helpers, cookie jar, a CLI runner for CI.
+
+### What redaction cannot do
+
+Roost masks what it knows is secret: credential-looking parameters and headers,
+and the exact values from your private environment file. It cannot guess that
+an arbitrary string in a response body is sensitive — doing so would corrupt
+real data. Turn redaction off with `roost.redactSecrets` when you need the raw
+response.
 
 Missing something? Open an issue — the roadmap is driven by what people
 actually ask for.

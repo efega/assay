@@ -78,6 +78,21 @@ export class GestorDeEntornos {
     return this.seleccion;
   }
 
+  /**
+   * Valores del fichero privado del entorno activo. Son los unicos que
+   * sabemos con certeza que son secretos, y por eso los unicos que se
+   * enmascaran dentro del cuerpo de una respuesta.
+   */
+  async secretosPara(documento: vscode.Uri): Promise<string[]> {
+    try {
+      const { privado } = await cargar(documento);
+      if (!this.seleccion) return [];
+      return Object.values(privado[this.seleccion] ?? {});
+    } catch {
+      return [];
+    }
+  }
+
   /** Variables del entorno activo para un documento concreto. */
   async variablesPara(documento: vscode.Uri): Promise<Entorno> {
     try {

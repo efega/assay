@@ -9,14 +9,31 @@
 
 import * as vscode from "vscode";
 import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
-import { ejecutar, formatear, redactarUrl, HttpError } from "./http";
+import { ejecutar, formatear, redactarUrl, redactarValores, HttpError } from "./http";
 import { evaluarTodos, resumir } from "./asserts";
 import { Almacen, ErrorDeCadena, aplicar, resolverDependencias } from "./cadena";
 import { combinar } from "./entornos";
 import { GestorDeEntornos } from "./entornosEditor";
 
+interface Ajustes {
+  timeoutMs: number;
+  redactar: boolean;
+}
+
+/** Se lee en cada envio: cambiar el ajuste surte efecto sin recargar. */
+function ajustes(): Ajustes {
+  const c = vscode.workspace.getConfiguration("roost");
+  return {
+    timeoutMs: c.get<number>("timeoutMs", 30_000),
+    redactar: c.get<boolean>("redactSecrets", true),
+  };
+}
+
+// Sin restringir el esquema a "file": si no, un buffer sin guardar no
+// tiene boton Send, y abrir un fichero nuevo para probar es justo lo primero
+// que hace alguien que evalua la herramienta.
 const LENGUAJES = [
-  { language: "http", scheme: "file" },
+  { language: "http" },
   { language: "plaintext", pattern: "**/*.{http,rest}" },
 ];
 
@@ -125,6 +142,8 @@ async function enviar(
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
+  const { timeoutMs, redactar } = ajustes();
+  const oculta = (url: string) => (redactar ? redactarUrl(url) : url);
 
   // Entorno primero, fichero despues: las variables del .http mandan, que es
   // como se comporta REST Client.
@@ -135,21 +154,21 @@ async function enviar(
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Window,
-      title: `${peticion.metodo} ${acortar(redactarUrl(peticion.url))}`,
+      title: `${peticion.metodo} ${acortar(oculta(peticion.url))}`,
     },
     async () => {
       try {
         // Las dependencias primero. Se registran los nombres, nunca los valores:
         // un token en el panel acaba en una captura o en un fichero commiteado.
         const { ejecutadas } = await resolverDependencias(
-          peticion, fichero, almacen, (p) => ejecutar(p), conVariables,
+          peticion, fichero, almacen, (p) => ejecutar(p, { timeoutMs }), conVariables,
         );
         if (ejecutadas.length > 0) {
           salida.appendLine(`  cadena: ${ejecutadas.join(" -> ")}`);
         }
 
         const resuelta = aplicar(conVariables(peticion), almacen);
-        const respuesta = await ejecutar(resuelta);
+        const respuesta = await ejecutar(resuelta, { timeoutMs });
 
         if (peticion.nombre) almacen.guardar(peticion.nombre, respuesta);
 
@@ -157,10 +176,16 @@ async function enviar(
         const fallan = resultados.filter((r) => !r.ok).length;
         const informe = resumir(resultados);
 
+        const texto = informe
+          ? `${formatear(respuesta, resuelta, redactar)}\n\n# ${informe.split("\n").join("\n# ")}`
+          : formatear(respuesta, resuelta, redactar);
+
+        // Un servidor puede devolverte el secreto que le mandaste: httpbin lo
+        // hace, y muchos endpoints de depuracion tambien.
+        const secretos = redactar && uri ? await entornos.secretosPara(uri) : [];
+
         const documento = await vscode.workspace.openTextDocument({
-          content: informe
-            ? `${formatear(respuesta, resuelta)}\n\n# ${informe.split("\n").join("\n# ")}`
-            : formatear(respuesta, resuelta),
+          content: redactarValores(texto, secretos),
           language: "http",
         });
         await vscode.window.showTextDocument(documento, {
@@ -170,15 +195,15 @@ async function enviar(
         });
 
         salida.appendLine(
-          `${resuelta.metodo} ${redactarUrl(resuelta.url)} -> ${respuesta.estado} ` +
+          `${resuelta.metodo} ${oculta(resuelta.url)} -> ${respuesta.estado} ` +
           `(${respuesta.ms} ms)` +
-          (resultados.length ? ` · ${resultados.length - fallan}/${resultados.length} asertos` : ""),
+          (resultados.length ? ` · ${resultados.length - fallan}/${resultados.length} assertions` : ""),
         );
         if (informe) salida.appendLine(informe);
         if (fallan > 0) {
           void vscode.window.showWarningMessage(
             `${fallan} of ${resultados.length} assertions failed in ` +
-            `${peticion.nombre ?? acortar(redactarUrl(peticion.url), 40)}.`,
+            `${peticion.nombre ?? acortar(oculta(peticion.url), 40)}.`,
           );
         }
       } catch (error) {
@@ -186,7 +211,7 @@ async function enviar(
           error instanceof ErrorDeCadena || error instanceof HttpError
             ? error.message
             : `Unexpected failure: ${String(error)}`;
-        salida.appendLine(`${peticion.metodo} ${redactarUrl(peticion.url)} -> ${mensaje}`);
+        salida.appendLine(`${peticion.metodo} ${oculta(peticion.url)} -> ${mensaje}`);
         void vscode.window.showErrorMessage(mensaje);
       }
     },

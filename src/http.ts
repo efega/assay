@@ -92,7 +92,8 @@ export async function ejecutar(
  * registro. La respuesta se abre como documento y el usuario puede guardarla
  * o capturarla; un token encadenado no puede acabar ahi en claro.
  */
-const SENSIBLES = /^(.*[-_.])?(token|secret|key|apikey|password|passwd|pwd|auth|authorization|signature|sig|credential|session)([-_.].*)?$/i;
+const SENSIBLES =
+  /^(.*[-_.])?(token|secret|key|apikey|password|passwd|pwd|auth|authorization|signature|sig|credential|session|cookie|bearer|jwt)([-_.].*)?$/i;
 
 /** Enmascara los valores sensibles de la query. No toca el resto de la URL. */
 export function redactarUrl(url: string): string {
@@ -122,13 +123,43 @@ export function redactarCabeceras(
   return salida;
 }
 
+/**
+ * Enmascara valores secretos concretos alla donde aparezcan, incluido el
+ * cuerpo. Hace falta porque un servidor puede devolverte lo que le mandaste:
+ * httpbin lo hace, y muchos endpoints de depuracion tambien.
+ *
+ * Solo enmascara coincidencias exactas de valores que ya sabemos secretos
+ * -los del fichero privado de entorno-, nunca por heuristica sobre el cuerpo:
+ * adivinar que es un secreto dentro de un JSON corrompe datos legitimos.
+ *
+ * El minimo de 6 caracteres evita destrozar la salida cuando alguien tiene
+ * una variable con valor "1" o "dev".
+ */
+export function redactarValores(texto: string, secretos: readonly string[]): string {
+  let salida = texto;
+  for (const secreto of secretos) {
+    if (secreto && secreto.length >= 6) {
+      salida = salida.split(secreto).join("***");
+    }
+  }
+  return salida;
+}
+
 /** Formatea la respuesta como texto, al estilo de un fichero .http. */
-export function formatear(respuesta: HttpResponse, peticion: HttpRequest): string {
+export function formatear(
+  respuesta: HttpResponse,
+  peticion: HttpRequest,
+  redactar = true,
+): string {
   const lineas: string[] = [];
-  lineas.push(`${peticion.metodo} ${redactarUrl(peticion.url)}`);
+  lineas.push(`${peticion.metodo} ${redactar ? redactarUrl(peticion.url) : peticion.url}`);
   lineas.push("");
   lineas.push(`HTTP ${respuesta.estado} ${respuesta.textoEstado}`.trim());
-  for (const [clave, valor] of Object.entries(respuesta.cabeceras)) {
+  // Las cabeceras de respuesta tambien: set-cookie lleva la sesion.
+  const cabeceras = redactar
+    ? redactarCabeceras(respuesta.cabeceras)
+    : respuesta.cabeceras;
+  for (const [clave, valor] of Object.entries(cabeceras)) {
     lineas.push(`${clave}: ${valor}`);
   }
   lineas.push("");
