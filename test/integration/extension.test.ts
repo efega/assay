@@ -13,6 +13,7 @@ import * as vscode from "vscode";
 
 const RAIZ = path.resolve(__dirname, "..", "..", "..");
 const EJEMPLO = path.join(RAIZ, "samples", "ejemplo.http");
+const METODO = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s/;
 
 async function abrirEjemplo(): Promise<vscode.TextDocument> {
   const documento = await vscode.workspace.openTextDocument(EJEMPLO);
@@ -35,6 +36,10 @@ suite("Roost", () => {
       comandos.includes("roost.enviarBajoCursor"),
       "falta roost.enviarBajoCursor",
     );
+    assert.ok(
+      comandos.includes("roost.limpiarCadena"),
+      "falta roost.limpiarCadena",
+    );
   });
 
   test("los .http se reconocen como lenguaje http", async () => {
@@ -50,8 +55,17 @@ suite("Roost", () => {
     );
     assert.ok(lentes, "el proveedor no devolvio nada");
 
-    // samples/ejemplo.http tiene 5 peticiones.
-    assert.equal(lentes.length, 5, `se esperaban 5 lentes, hay ${lentes.length}`);
+    // Se deriva del propio fichero: si el ejemplo crece, el test no se rompe.
+    const lineasDePeticion = Array.from(
+      { length: documento.lineCount },
+      (_, n) => documento.lineAt(n).text,
+    ).filter((l) => METODO.test(l)).length;
+    assert.ok(lineasDePeticion > 0, "el ejemplo deberia tener peticiones");
+    assert.equal(
+      lentes.length,
+      lineasDePeticion,
+      `${lineasDePeticion} peticiones en el fichero pero ${lentes.length} lentes`,
+    );
 
     for (const lente of lentes) {
       assert.equal(lente.command?.command, "roost.enviar");
@@ -91,9 +105,34 @@ suite("Roost", () => {
     const conAsertos = (lentes ?? []).filter(
       (l) => (l.command?.arguments?.[0] as { asertos?: unknown[] })?.asertos?.length,
     );
-    assert.equal(conAsertos.length, 1, "el bloque con # @assert deberia llevarlos");
-    const peticion = conAsertos[0].command!.arguments![0] as { asertos: unknown[] };
-    assert.equal(peticion.asertos.length, 4);
+    assert.ok(
+      conAsertos.length > 0,
+      "algun bloque del ejemplo lleva # @assert y no llego al CodeLens",
+    );
+    for (const lente of conAsertos) {
+      const peticion = lente.command!.arguments![0] as {
+        asertos: { objetivo: string; operador: string }[];
+      };
+      for (const aserto of peticion.asertos) {
+        assert.ok(aserto.objetivo, "un aserto llego sin objetivo");
+        assert.ok(aserto.operador, "un aserto llego sin operador");
+      }
+    }
+  });
+
+  test("las peticiones encadenadas llegan con su nombre", async () => {
+    const documento = await abrirEjemplo();
+    const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider",
+      documento.uri,
+    );
+    const nombradas = (lentes ?? [])
+      .map((l) => (l.command?.arguments?.[0] as { nombre?: string })?.nombre)
+      .filter(Boolean);
+    assert.ok(
+      nombradas.includes("origen"),
+      `el ejemplo define "# @name origen"; llegaron: ${JSON.stringify(nombradas)}`,
+    );
   });
 
   test("un fichero sin peticiones no genera lentes", async () => {

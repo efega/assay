@@ -134,3 +134,31 @@ test("rutas: indices, comillas y length", () => {
   assert.equal(resolverRuta(dato, "$.a.noexiste"), AUSENTE);
   assert.equal(resolverRuta(dato, "$.a['b c'][9]"), AUSENTE);
 });
+
+test("los asertos valen antes, entre cabeceras y despues del cuerpo", () => {
+  const { peticiones } = parse([
+    "### Mixto",
+    "# @assert status 200",          // preambulo
+    "POST https://x.dev/a",
+    "Content-Type: application/json",
+    "# @assert time < 5000",         // entre cabeceras
+    "",
+    '{"a": 1}',
+    "# @assert body.$.ok exists",    // tras el cuerpo
+  ].join("\n"));
+
+  assert.equal(peticiones[0].asertos.length, 3);
+  assert.equal(peticiones[0].cuerpo, '{"a": 1}', "el cuerpo no debe llevar el aserto");
+  assert.equal(peticiones[0].cabeceras["Content-Type"], "application/json");
+});
+
+test("un aserto tras el cuerpo no se cuela como texto del cuerpo", () => {
+  const { peticiones } = parse([
+    "POST https://x.dev/a",
+    "",
+    "linea de cuerpo",
+    "# @assert status 201",
+  ].join("\n"));
+  assert.equal(peticiones[0].cuerpo, "linea de cuerpo");
+  assert.equal(peticiones[0].asertos.length, 1);
+});

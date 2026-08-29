@@ -131,7 +131,14 @@ export function parse(texto: string): HttpFile {
     while (i < bloque.lineas.length) {
       const linea = bloque.lineas[i];
       if (!linea.trim()) { i++; break; }
-      if (COMENTARIO.test(linea)) { i++; continue; }
+      if (COMENTARIO.test(linea)) {
+        // Los asertos son igual de validos antes que despues de la peticion:
+        // unos vienen del estilo de REST Client y otros del de IntelliJ.
+        const tardio = parseAserto(linea);
+        if (tardio) asertos.push(tardio);
+        i++;
+        continue;
+      }
       const cab = CABECERA.exec(linea);
       if (!cab) break;
       cabeceras[cab[1]] = cab[2].trim();
@@ -139,6 +146,11 @@ export function parse(texto: string): HttpFile {
     }
 
     // Cuerpo: el resto, sin comentarios sueltos ni lineas en blanco finales.
+    // Los asertos que aparezcan aqui tambien cuentan, y no ensucian el cuerpo.
+    for (const linea of bloque.lineas.slice(i)) {
+      const tardio = parseAserto(linea);
+      if (tardio) asertos.push(tardio);
+    }
     const cuerpoLineas = bloque.lineas.slice(i).filter((l) => !COMENTARIO.test(l));
     while (cuerpoLineas.length && !cuerpoLineas[cuerpoLineas.length - 1].trim()) {
       cuerpoLineas.pop();

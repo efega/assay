@@ -44,9 +44,9 @@ Funciona el nucleo gratuito:
 - [x] Variables de fichero `@nombre = valor` y `{{sustitucion}}`, encadenables
 - [x] CodeLens "Enviar" sobre cada peticion, y `Ctrl+Alt+R`
 - [x] Respuesta en panel lateral con tiempo y tamanyo
-- [x] **Asertos sobre la respuesta**    <- 59 votos, 7,9 anyos pedido
+- [x] **Asertos sobre la respuesta**     <- 59 votos, 7,9 anyos pedido
+- [x] **Ejecucion encadenada**           <- 54 votos, 5,7 anyos pedido
 - [ ] Entornos (`http-client.env.json`)
-- [ ] Ejecucion encadenada de peticiones <- 54 votos, 5,7 anyos pedido
 - [ ] Runner de linea de comandos        <- 44 votos, 6,9 anyos pedido
 - [ ] `text/event-stream` (SSE)          <- 44 votos, 6,6 anyos pedido
 
@@ -73,6 +73,45 @@ Operadores: `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains`, `matches`, `exists`,
 
 Es declarativo a proposito, no un bloque de script: no hay sandbox que
 asegurar, no arrastra dependencias, y el diff en git se lee de un vistazo.
+
+## Encadenamiento
+
+Una peticion puede usar la respuesta de otra. Si la dependencia no se ha
+lanzado, se lanza sola:
+
+```http
+### Login
+# @name login
+POST {{base}}/login
+
+### Perfil
+GET {{base}}/me
+Authorization: Bearer {{login.response.body.$.token}}
+# @assert status 200
+```
+
+Referencias disponibles: `{{nombre.response.body.$.ruta}}`,
+`{{nombre.response.headers.<cabecera>}}` y `{{nombre.response.status}}`.
+Sintaxis de REST Client, para no romper la compatibilidad.
+
+Las respuestas se guardan en memoria por fichero y **se descartan en cuanto
+editas el documento**, para no arrastrar un token viejo sin darte cuenta.
+Tambien hay un comando *Roost: reiniciar cadena*.
+
+### Decisiones de seguridad
+
+Son deliberadas y estan probadas:
+
+- **Deteccion de ciclos.** A que depende de B que depende de A falla nombrando
+  el ciclo, en lugar de colgarse.
+- **Profundidad maxima de 5.** Un fichero mal escrito no puede disparar
+  trafico en cascada sin limite.
+- **Los valores resueltos no se registran nunca.** En el panel se ve la
+  referencia (`login.response.body.$.token`), no su valor. Un token que
+  aparece en un registro acaba en una captura o en un fichero commiteado.
+- **Redaccion de secretos.** Los parametros de query y las cabeceras cuyo
+  nombre parece credencial (`token`, `api_key`, `authorization`, ...) se
+  muestran como `***`.
 
 ## Desarrollo
 

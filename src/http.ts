@@ -87,10 +87,45 @@ export async function ejecutar(
   }
 }
 
+/**
+ * Nombres de parametro cuyo valor no debe verse nunca en un panel ni en un
+ * registro. La respuesta se abre como documento y el usuario puede guardarla
+ * o capturarla; un token encadenado no puede acabar ahi en claro.
+ */
+const SENSIBLES = /^(.*[-_.])?(token|secret|key|apikey|password|passwd|pwd|auth|authorization|signature|sig|credential|session)([-_.].*)?$/i;
+
+/** Enmascara los valores sensibles de la query. No toca el resto de la URL. */
+export function redactarUrl(url: string): string {
+  try {
+    const u = new URL(url);
+    let tocada = false;
+    for (const clave of [...u.searchParams.keys()]) {
+      if (SENSIBLES.test(clave)) {
+        u.searchParams.set(clave, "***");
+        tocada = true;
+      }
+    }
+    return tocada ? u.toString() : url;
+  } catch {
+    return url;   // no es una URL absoluta: se deja como esta
+  }
+}
+
+/** Enmascara las cabeceras sensibles. */
+export function redactarCabeceras(
+  cabeceras: Record<string, string>,
+): Record<string, string> {
+  const salida: Record<string, string> = {};
+  for (const [clave, valor] of Object.entries(cabeceras)) {
+    salida[clave] = SENSIBLES.test(clave) ? "***" : valor;
+  }
+  return salida;
+}
+
 /** Formatea la respuesta como texto, al estilo de un fichero .http. */
 export function formatear(respuesta: HttpResponse, peticion: HttpRequest): string {
   const lineas: string[] = [];
-  lineas.push(`${peticion.metodo} ${peticion.url}`);
+  lineas.push(`${peticion.metodo} ${redactarUrl(peticion.url)}`);
   lineas.push("");
   lineas.push(`HTTP ${respuesta.estado} ${respuesta.textoEstado}`.trim());
   for (const [clave, valor] of Object.entries(respuesta.cabeceras)) {

@@ -44,7 +44,12 @@
       {
         "command": "roost.enviarBajoCursor",
         "title": "Enviar peticion",
-        "category": "roost"
+        "category": "Roost"
+      },
+      {
+        "command": "roost.limpiarCadena",
+        "title": "Reiniciar cadena (descartar respuestas guardadas)",
+        "category": "Roost"
       }
     ],
     "keybindings": [

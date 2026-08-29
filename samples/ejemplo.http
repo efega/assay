@@ -35,3 +35,16 @@ GET {{base}}/status/404
 # @assert body.$.headers.Accept exists
 GET {{base}}/get
 Accept: application/json
+
+### Encadenado: esta peticion produce un valor
+# @name origen
+POST {{base}}/post
+Content-Type: application/json
+
+{"token": "T0K3N-DE-EJEMPLO", "id": 42}
+
+### Y esta lo consume. Ejecuta solo esta: la de arriba se lanza sola.
+GET {{base}}/anything/{{origen.response.body.$.json.id}}
+Authorization: Bearer {{origen.response.body.$.json.token}}
+# @assert status 200
+# @assert body.$.headers.Authorization contains T0K3N
