@@ -44,11 +44,35 @@ Funciona el nucleo gratuito:
 - [x] Variables de fichero `@nombre = valor` y `{{sustitucion}}`, encadenables
 - [x] CodeLens "Enviar" sobre cada peticion, y `Ctrl+Alt+R`
 - [x] Respuesta en panel lateral con tiempo y tamanyo
+- [x] **Asertos sobre la respuesta**    <- 59 votos, 7,9 anyos pedido
 - [ ] Entornos (`http-client.env.json`)
-- [ ] Asertos sobre la respuesta        <- 59 votos, 7,9 anyos pedido
 - [ ] Ejecucion encadenada de peticiones <- 54 votos, 5,7 anyos pedido
 - [ ] Runner de linea de comandos        <- 44 votos, 6,9 anyos pedido
 - [ ] `text/event-stream` (SSE)          <- 44 votos, 6,6 anyos pedido
+
+## Asertos
+
+La peticion mas votada de REST Client (59 votos, abierta desde hace casi ocho
+anyos), y la funcion por la que cobran Postman e Insomnia. Se declaran en el
+propio fichero:
+
+```http
+### Login
+# @name login
+# @assert status 200
+# @assert time < 1000
+# @assert header.content-type contains json
+# @assert body.$.token exists
+# @assert body.$.items.length > 0
+POST {{base}}/login
+```
+
+Objetivos: `status`, `time`, `bytes`, `header.<nombre>`, `body.<ruta>`.
+Operadores: `=`, `!=`, `<`, `<=`, `>`, `>=`, `contains`, `matches`, `exists`,
+`empty`. Sin operador se asume igualdad.
+
+Es declarativo a proposito, no un bloque de script: no hay sandbox que
+asegurar, no arrastra dependencias, y el diff en git se lee de un vistazo.
 
 ## Desarrollo
 

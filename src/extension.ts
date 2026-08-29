@@ -10,6 +10,7 @@
 import * as vscode from "vscode";
 import { parse, resolver, type HttpRequest } from "./parser";
 import { ejecutar, formatear, HttpError } from "./http";
+import { evaluarTodos, resumir } from "./asserts";
 
 const LENGUAJES = [
   { language: "http", scheme: "file" },
@@ -83,8 +84,14 @@ async function enviar(
     async () => {
       try {
         const respuesta = await ejecutar(resuelta);
+        const resultados = evaluarTodos(resuelta.asertos, respuesta);
+        const fallan = resultados.filter((r) => !r.ok).length;
+
+        const informe = resumir(resultados);
         const documento = await vscode.workspace.openTextDocument({
-          content: formatear(respuesta, resuelta),
+          content: informe
+            ? `${formatear(respuesta, resuelta)}\n\n# ${informe.split("\n").join("\n# ")}`
+            : formatear(respuesta, resuelta),
           language: "http",
         });
         await vscode.window.showTextDocument(documento, {
@@ -92,10 +99,18 @@ async function enviar(
           preserveFocus: true,
           preview: true,
         });
+
         salida.appendLine(
           `${resuelta.metodo} ${resuelta.url} -> ${respuesta.estado} ` +
-          `(${respuesta.ms} ms)`,
+          `(${respuesta.ms} ms)` +
+          (resultados.length ? ` · ${resultados.length - fallan}/${resultados.length} asertos` : ""),
         );
+        if (informe) salida.appendLine(informe);
+        if (fallan > 0) {
+          void vscode.window.showWarningMessage(
+            `${fallan} de ${resultados.length} asertos fallan en ${resuelta.nombre ?? resuelta.url}.`,
+          );
+        }
       } catch (error) {
         const mensaje = error instanceof HttpError
           ? error.message

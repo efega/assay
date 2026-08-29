@@ -26,3 +26,12 @@ Content-Type: application/json
 
 ### Comprobar un codigo de error
 GET {{base}}/status/404
+
+### Con asertos: la respuesta se verifica sola
+# @name conAsertos
+# @assert status 200
+# @assert time < 5000
+# @assert header.content-type contains json
+# @assert body.$.headers.Accept exists
+GET {{base}}/get
+Accept: application/json

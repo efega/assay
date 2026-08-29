@@ -50,8 +50,8 @@ suite("Roost", () => {
     );
     assert.ok(lentes, "el proveedor no devolvio nada");
 
-    // samples/ejemplo.http tiene 4 peticiones.
-    assert.equal(lentes.length, 4, `se esperaban 4 lentes, hay ${lentes.length}`);
+    // samples/ejemplo.http tiene 5 peticiones.
+    assert.equal(lentes.length, 5, `se esperaban 5 lentes, hay ${lentes.length}`);
 
     for (const lente of lentes) {
       assert.equal(lente.command?.command, "roost.enviar");
@@ -80,6 +80,20 @@ suite("Roost", () => {
       tooltips.every((t) => /\{\{base\}\}|https?:\/\//.test(t)),
       "algun tooltip no lleva URL",
     );
+  });
+
+  test("los asertos del ejemplo llegan al CodeLens", async () => {
+    const documento = await abrirEjemplo();
+    const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider",
+      documento.uri,
+    );
+    const conAsertos = (lentes ?? []).filter(
+      (l) => (l.command?.arguments?.[0] as { asertos?: unknown[] })?.asertos?.length,
+    );
+    assert.equal(conAsertos.length, 1, "el bloque con # @assert deberia llevarlos");
+    const peticion = conAsertos[0].command!.arguments![0] as { asertos: unknown[] };
+    assert.equal(peticion.asertos.length, 4);
   });
 
   test("un fichero sin peticiones no genera lentes", async () => {

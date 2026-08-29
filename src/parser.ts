@@ -10,6 +10,8 @@
  * Sin dependencias de vscode a proposito: asi se puede probar sin editor.
  */
 
+import { parseAserto, type Aserto } from "./asserts";
+
 export interface HttpRequest {
   /** Nombre del bloque: del separador `### nombre` o de `# @name nombre`. */
   nombre?: string;
@@ -18,6 +20,8 @@ export interface HttpRequest {
   version?: string;
   cabeceras: Record<string, string>;
   cuerpo?: string;
+  /** Asertos declarados con `# @assert ...` en el preambulo del bloque. */
+  asertos: Aserto[];
   /** Linea 0-indexada donde empieza el bloque, para el CodeLens. */
   linea: number;
   /** Linea 0-indexada de la linea de peticion (METODO URL). */
@@ -88,6 +92,7 @@ export function parse(texto: string): HttpFile {
 
   for (const bloque of bloques) {
     let nombre = bloque.titulo;
+    const asertos: Aserto[] = [];
     let i = 0;
 
     // Preambulo: variables, metadatos y comentarios antes de la peticion.
@@ -97,6 +102,9 @@ export function parse(texto: string): HttpFile {
 
       const meta = META_NOMBRE.exec(linea);
       if (meta) { nombre = meta[1]; i++; continue; }
+
+      const aserto = parseAserto(linea);
+      if (aserto) { asertos.push(aserto); i++; continue; }
 
       const variable = VARIABLE.exec(linea.trim());
       if (variable) { variables[variable[1]] = variable[2].trim(); i++; continue; }
@@ -144,6 +152,7 @@ export function parse(texto: string): HttpFile {
       version: partes.version,
       cabeceras,
       cuerpo,
+      asertos,
       linea: bloque.inicio,
       lineaPeticion: bloque.inicio + lineaPeticionIdx + (bloque.titulo !== undefined || bloque.inicio > 0 ? 1 : 0),
     });

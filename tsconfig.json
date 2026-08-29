@@ -6,6 +6,7 @@
     "outDir": "out",
     "rootDir": ".",
     "strict": true,
+    "noEmitOnError": true,
     "noUnusedLocals": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
