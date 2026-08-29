@@ -12,6 +12,8 @@ import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
 import { ejecutar, formatear, redactarUrl, HttpError } from "./http";
 import { evaluarTodos, resumir } from "./asserts";
 import { Almacen, ErrorDeCadena, aplicar, resolverDependencias } from "./cadena";
+import { combinar } from "./entornos";
+import { GestorDeEntornos } from "./entornosEditor";
 
 const LENGUAJES = [
   { language: "http", scheme: "file" },
@@ -39,6 +41,13 @@ export function activate(contexto: vscode.ExtensionContext): void {
   const salida = vscode.window.createOutputChannel("Roost", "http");
   contexto.subscriptions.push(salida);
 
+  const entornos = new GestorDeEntornos(contexto, salida);
+
+  contexto.subscriptions.push(
+    vscode.commands.registerCommand("roost.seleccionarEntorno", () =>
+      entornos.seleccionar()),
+  );
+
   contexto.subscriptions.push(
     vscode.languages.registerCodeLensProvider(LENGUAJES, new ProveedorDeLentes()),
   );
@@ -60,7 +69,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(
       "roost.enviar",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
-        enviar(peticion, fichero, uri, salida),
+        enviar(peticion, fichero, uri, salida, entornos),
     ),
   );
 
@@ -76,7 +85,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
         void vscode.window.showWarningMessage("No hay ninguna peticion en el cursor.");
         return;
       }
-      void enviar(peticion, fichero, editor.document.uri, salida);
+      void enviar(peticion, fichero, editor.document.uri, salida, entornos);
     }),
   );
 
@@ -112,10 +121,16 @@ async function enviar(
   fichero: HttpFile | undefined,
   uri: vscode.Uri | undefined,
   salida: vscode.OutputChannel,
+  entornos: GestorDeEntornos,
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
-  const conVariables = (p: HttpRequest) => resolver(p, fichero.variables);
+
+  // Entorno primero, fichero despues: las variables del .http mandan, que es
+  // como se comporta REST Client.
+  const delEntorno = uri ? await entornos.variablesPara(uri) : {};
+  const variables = combinar(delEntorno, fichero.variables);
+  const conVariables = (p: HttpRequest) => resolver(p, variables);
 
   await vscode.window.withProgress(
     {

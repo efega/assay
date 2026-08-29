@@ -40,6 +40,10 @@ suite("Roost", () => {
       comandos.includes("roost.limpiarCadena"),
       "falta roost.limpiarCadena",
     );
+    assert.ok(
+      comandos.includes("roost.seleccionarEntorno"),
+      "falta roost.seleccionarEntorno",
+    );
   });
 
   test("los .http se reconocen como lenguaje http", async () => {
@@ -133,6 +137,23 @@ suite("Roost", () => {
       nombradas.includes("origen"),
       `el ejemplo define "# @name origen"; llegaron: ${JSON.stringify(nombradas)}`,
     );
+  });
+
+  test("los entornos del ejemplo se cargan desde disco", async () => {
+    const { cargar } = await import("../../src/entornosEditor");
+    const { nombresDe, variablesDe } = await import("../../src/entornos");
+
+    const { publico, privado, carpeta } = await cargar(vscode.Uri.file(EJEMPLO));
+    assert.ok(carpeta, "no encontro la carpeta con los ficheros de entorno");
+    assert.deepEqual(nombresDe(publico, privado), ["dev", "prod"]);
+
+    const dev = variablesDe(publico, privado, "dev");
+    assert.equal(dev.base, "https://httpbin.org");
+    assert.equal(dev.token, "secreto-solo-local", "el privado debe fusionarse");
+
+    const prod = variablesDe(publico, privado, "prod");
+    assert.equal(prod.base, "https://postman-echo.com");
+    assert.equal(prod.token, undefined, "prod no define token");
   });
 
   test("un fichero sin peticiones no genera lentes", async () => {

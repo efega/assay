@@ -50,6 +50,11 @@
         "command": "roost.limpiarCadena",
         "title": "Reiniciar cadena (descartar respuestas guardadas)",
         "category": "Roost"
+      },
+      {
+        "command": "roost.seleccionarEntorno",
+        "title": "Seleccionar entorno",
+        "category": "Roost"
       }
     ],
     "keybindings": [

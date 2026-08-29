@@ -46,7 +46,7 @@ Funciona el nucleo gratuito:
 - [x] Respuesta en panel lateral con tiempo y tamanyo
 - [x] **Asertos sobre la respuesta**     <- 59 votos, 7,9 anyos pedido
 - [x] **Ejecucion encadenada**           <- 54 votos, 5,7 anyos pedido
-- [ ] Entornos (`http-client.env.json`)
+- [x] **Entornos** (`http-client.env.json`)
 - [ ] Runner de linea de comandos        <- 44 votos, 6,9 anyos pedido
 - [ ] `text/event-stream` (SSE)          <- 44 votos, 6,6 anyos pedido
 
@@ -112,6 +112,29 @@ Son deliberadas y estan probadas:
 - **Redaccion de secretos.** Los parametros de query y las cabeceras cuyo
   nombre parece credencial (`token`, `api_key`, `authorization`, ...) se
   muestran como `***`.
+
+## Entornos
+
+Formato `http-client.env.json`, el mismo de REST Client e IntelliJ, asi que un
+fichero existente funciona sin tocarlo:
+
+```json
+{
+  "dev":  { "base": "http://localhost:3000" },
+  "prod": { "base": "https://api.example.com" }
+}
+```
+
+Se elige desde la barra de estado. Las variables del propio `.http` siguen
+mandando sobre las del entorno, como en REST Client.
+
+**Los secretos van aparte**, en `http-client.private.env.json`, que pisa al
+publico para las mismas claves. Asi el fichero de entornos se commitea sin
+miedo y el de credenciales no sale de tu maquina.
+
+Y si ese fichero tiene secretos y **no esta en `.gitignore`, Roost avisa y se
+ofrece a anyadirlo**. Es el peor fallo posible en una herramienta que presume
+de guardar tus credenciales en local, asi que se comprueba solo.
 
 ## Desarrollo
 
