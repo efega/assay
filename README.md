@@ -61,8 +61,17 @@ will run, and which requests it will fire first.
 | --- | --- |
 | **Assertions built in** | Status, timing, headers and JSON paths. Declarative: no scripting sandbox, and the diff reads clean in code review. |
 | **Request chaining** | Use one response in the next request. Dependencies run on their own, with cycle detection and a depth limit. |
+| **Failures where you are looking** | A failed assertion is underlined on its own line with the value that came back, and lands in the Problems panel. You never leave your request file. |
 | **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git, and Roost tells you if it isn't ignored yet. |
 | **Nothing is paywalled retroactively** | Your saved requests are yours. Export is always free. That is a promise, not a tier. |
+
+## Reads like code, not like a text file
+
+`.http` files get proper syntax highlighting: methods, URLs, headers,
+variables, `{{substitutions}}`, section titles and assertions.
+
+It uses standard TextMate scopes rather than fixed colours, so it follows
+whatever theme you already use and reads correctly in light and dark.
 
 ## Works with the files you already have
 
@@ -92,8 +101,13 @@ they work.
 
 Omit the operator for equality. Assertions work anywhere in the block.
 
-Results land at the top of the response, and the editor tab tells you the
-outcome at a glance: `me · 3 passed · 13ms`.
+Results land at the top of the response, **passes in green and failures in
+red**, and the editor tab tells you the outcome at a glance:
+`me · 3 passed · 13ms`.
+
+A failure is also **underlined on the assertion line itself** with the value
+that came back, and listed in the Problems panel. You see what broke without
+leaving your request file.
 
 <br>
 
@@ -159,9 +173,14 @@ is sensitive, because doing so would corrupt real data. Turn redaction off with
 
 ## Status
 
-Early, and honest about it. Working today: parsing, variables, environments,
-assertions, chaining, secret redaction. Not yet: server-sent events, GraphQL
-helpers, cookie jar, a CLI runner for CI.
+Early, and honest about it.
+
+**Working today:** syntax highlighting, request parsing, file and environment
+variables, assertions with editor diagnostics, request chaining, secret
+redaction.
+
+**Not yet:** server-sent events, GraphQL helpers, a cookie jar, and a CLI
+runner so a `.http` file can run in CI.
 
 Missing something? [Open an issue](https://github.com/efega/roost/issues). The
 roadmap is driven by what people actually ask for.

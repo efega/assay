@@ -64,7 +64,7 @@
       },
       {
         "command": "roost.limpiarCadena",
-        "title": "Reset chain (discard saved responses)",
+        "title": "Reset chain",
         "category": "Roost"
       },
       {
