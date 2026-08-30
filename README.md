@@ -73,6 +73,34 @@ variables, `{{substitutions}}`, section titles and assertions.
 It uses standard TextMate scopes rather than fixed colours, so it follows
 whatever theme you already use and reads correctly in light and dark.
 
+<br>
+
+## The small decisions
+
+None of these are features. They are the difference between a tool you tolerate
+and one you forget you are using.
+
+- **Highlighting follows your theme, not ours.** Standard TextMate scopes, so
+  it reads correctly in light, dark and whatever you actually use. Hardcoded
+  colours look right on the author's machine and wrong on everyone else's.
+- **Failures appear on the line that failed**, with the value that came back,
+  because that is where you are looking. Not in a popup you have to dismiss.
+- **A failed assertion is a warning, not an error.** It tells you something
+  about a server, not about your file. Marking it red would put an error badge
+  on a perfectly valid document.
+- **The response is read only.** No `Untitled-1` buffers piling up, nothing
+  asking whether you want to save a response you never wrote.
+- **The tab tells you the outcome**: `me · 3 passed · 13ms`. You can read the
+  result without switching to the panel.
+- **The editor tells you what a request will do before you send it**: how many
+  assertions will run, and which requests it will fire first.
+- **Chained responses are dropped the moment you edit the file**, so a stale
+  token never travels silently after you changed the login above it.
+- **No popup for something already on screen.** If the failure is underlined
+  and listed in Problems, a modal on top of that is noise.
+
+<br>
+
 ## Works with the files you already have
 
 Roost reads the same `.http` syntax as REST Client: `###` separators,
