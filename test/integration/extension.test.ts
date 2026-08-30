@@ -15,6 +15,10 @@ const RAIZ = path.resolve(__dirname, "..", "..", "..");
 const EJEMPLO = path.join(RAIZ, "samples", "ejemplo.http");
 const METODO = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s/;
 
+/** Solo las lentes de envio: ahora tambien hay de asertos y de cadena. */
+const soloEnvio = (lentes: vscode.CodeLens[] | undefined) =>
+  (lentes ?? []).filter((l) => l.command?.title.includes("Send"));
+
 async function abrirEjemplo(): Promise<vscode.TextDocument> {
   const documento = await vscode.workspace.openTextDocument(EJEMPLO);
   await vscode.window.showTextDocument(documento);
@@ -65,13 +69,14 @@ suite("Roost", () => {
       (_, n) => documento.lineAt(n).text,
     ).filter((l) => METODO.test(l)).length;
     assert.ok(lineasDePeticion > 0, "el ejemplo deberia tener peticiones");
+    const envio = soloEnvio(lentes);
     assert.equal(
-      lentes.length,
+      envio.length,
       lineasDePeticion,
-      `${lineasDePeticion} peticiones en el fichero pero ${lentes.length} lentes`,
+      `${lineasDePeticion} peticiones pero ${envio.length} lentes de envio`,
     );
 
-    for (const lente of lentes) {
+    for (const lente of envio) {
       assert.equal(lente.command?.command, "roost.enviar");
       const texto = documento.lineAt(lente.range.start.line).text;
       assert.match(
@@ -89,7 +94,7 @@ suite("Roost", () => {
       "vscode.executeCodeLensProvider",
       documento.uri,
     );
-    const tooltips = (lentes ?? []).map((l) => l.command?.tooltip ?? "");
+    const tooltips = soloEnvio(lentes).map((l) => l.command?.tooltip ?? "");
     assert.ok(
       tooltips.some((t) => t.startsWith("POST ")),
       `ningun tooltip empieza por POST: ${JSON.stringify(tooltips)}`,

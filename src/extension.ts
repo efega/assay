@@ -9,11 +9,43 @@
 
 import * as vscode from "vscode";
 import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
-import { ejecutar, formatear, redactarUrl, redactarValores, HttpError } from "./http";
+import { ejecutar, redactarUrl, HttpError } from "./http";
 import { evaluarTodos, resumir } from "./asserts";
-import { Almacen, ErrorDeCadena, aplicar, resolverDependencias } from "./cadena";
+import { ESQUEMA, ProveedorDeRespuestas } from "./respuesta";
+import {
+  Almacen, ErrorDeCadena, aplicar, referenciasDe, resolverDependencias,
+} from "./cadena";
 import { combinar } from "./entornos";
 import { GestorDeEntornos } from "./entornosEditor";
+
+const SALTO = String.fromCharCode(10);
+
+/** Fichero de ejemplo del comando "New request file" y del walkthrough. */
+const PLANTILLA = [
+  "@base = https://api.github.com",
+  "",
+  "### A request is one line. Press Send above it.",
+  "GET {{base}}/zen",
+  "",
+  "### Assertions run on every send.",
+  "GET {{base}}/repos/microsoft/vscode",
+  "Accept: application/vnd.github+json",
+  "",
+  "# @assert status 200",
+  "# @assert time < 2000",
+  "# @assert body.$.name vscode",
+  "",
+  "### Name a request to reuse its response.",
+  "# @name repo",
+  "GET {{base}}/repos/microsoft/vscode",
+  "",
+  "### Roost sends the one above first, on its own.",
+  "GET {{base}}/repos/microsoft/vscode/contributors",
+  "X-Repo-Id: {{repo.response.body.$.id}}",
+  "",
+  "# @assert status 200",
+  "",
+].join(SALTO);
 
 interface Ajustes {
   timeoutMs: number;
@@ -60,6 +92,19 @@ export function activate(contexto: vscode.ExtensionContext): void {
 
   const entornos = new GestorDeEntornos(contexto, salida);
 
+  // Documentos de respuesta virtuales y de solo lectura: sin buffers sin
+  // guardar que el usuario tenga que ir cerrando.
+  const respuestas = new ProveedorDeRespuestas();
+  contexto.subscriptions.push(respuestas);
+  contexto.subscriptions.push(
+    vscode.workspace.registerTextDocumentContentProvider(ESQUEMA, respuestas),
+  );
+  contexto.subscriptions.push(
+    vscode.workspace.onDidCloseTextDocument((d) => {
+      if (d.uri.scheme === ESQUEMA) respuestas.olvidar(d.uri);
+    }),
+  );
+
   contexto.subscriptions.push(
     vscode.commands.registerCommand("roost.seleccionarEntorno", () =>
       entornos.seleccionar()),
@@ -86,7 +131,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(
       "roost.enviar",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
-        enviar(peticion, fichero, uri, salida, entornos),
+        enviar(peticion, fichero, uri, salida, entornos, respuestas),
     ),
   );
 
@@ -102,7 +147,20 @@ export function activate(contexto: vscode.ExtensionContext): void {
         void vscode.window.showWarningMessage("No request found at the cursor.");
         return;
       }
-      void enviar(peticion, fichero, editor.document.uri, salida, entornos);
+      void enviar(peticion, fichero, editor.document.uri, salida, entornos, respuestas);
+    }),
+  );
+
+  contexto.subscriptions.push(
+    vscode.commands.registerCommand("roost.nuevoFichero", async () => {
+      // Un fichero de arranque con las tres cosas que hay que entender:
+      // una peticion, un aserto y una cadena. Sin guardar todavia: el usuario
+      // decide donde vive.
+      const documento = await vscode.workspace.openTextDocument({
+        language: "http",
+        content: PLANTILLA,
+      });
+      await vscode.window.showTextDocument(documento);
     }),
   );
 
@@ -117,19 +175,59 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 }
 
+/**
+ * Ademas del boton, anota lo que la peticion va a hacer: cuantos asertos se
+ * comprobaran y que dependencias se lanzaran antes.
+ *
+ * No es decoracion. Las dos funciones que diferencian a Roost -asertos y
+ * cadena- son invisibles en un fichero de texto; anunciarlas donde el usuario
+ * ya esta mirando es lo que convierte "otro cliente HTTP" en "ah, esto hace
+ * tests".
+ */
 class ProveedorDeLentes implements vscode.CodeLensProvider {
   provideCodeLenses(documento: vscode.TextDocument): vscode.CodeLens[] {
+    // El panel de respuesta tambien es lenguaje http y contiene la linea de
+    // peticion: sin esto le saldria su propio boton Send, que no hace nada
+    // util y ensucia la lectura.
+    if (documento.uri.scheme === ESQUEMA) return [];
+
     const fichero = parse(documento.getText());
-    return fichero.peticiones.map((peticion) => {
+    const lentes: vscode.CodeLens[] = [];
+
+    for (const peticion of fichero.peticiones) {
       const linea = Math.min(peticion.lineaPeticion, documento.lineCount - 1);
       const rango = documento.lineAt(linea).range;
-      return new vscode.CodeLens(rango, {
-        title: `$(play) Send`,
+
+      lentes.push(new vscode.CodeLens(rango, {
+        title: "$(play) Send",
         tooltip: `${peticion.metodo} ${peticion.url}`,
         command: "roost.enviar",
         arguments: [peticion, fichero, documento.uri],
-      });
-    });
+      }));
+
+      if (peticion.asertos.length > 0) {
+        const n = peticion.asertos.length;
+        lentes.push(new vscode.CodeLens(rango, {
+          title: `$(beaker) ${n} ${n === 1 ? "assertion" : "assertions"}`,
+          tooltip: peticion.asertos.map((a) => a.origen).join(SALTO),
+          command: "roost.enviar",
+          arguments: [peticion, fichero, documento.uri],
+        }));
+      }
+
+      const dependencias = [...new Set(
+        referenciasDe(peticion).map((r) => r.peticion),
+      )];
+      if (dependencias.length > 0) {
+        lentes.push(new vscode.CodeLens(rango, {
+          title: `$(link) runs ${dependencias.join(", ")} first`,
+          tooltip: "Roost sends these automatically if they have not run yet",
+          command: "roost.enviar",
+          arguments: [peticion, fichero, documento.uri],
+        }));
+      }
+    }
+    return lentes;
   }
 }
 
@@ -139,6 +237,7 @@ async function enviar(
   uri: vscode.Uri | undefined,
   salida: vscode.OutputChannel,
   entornos: GestorDeEntornos,
+  respuestas: ProveedorDeRespuestas,
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
@@ -176,18 +275,14 @@ async function enviar(
         const fallan = resultados.filter((r) => !r.ok).length;
         const informe = resumir(resultados);
 
-        const texto = informe
-          ? `${formatear(respuesta, resuelta, redactar)}\n\n# ${informe.split("\n").join("\n# ")}`
-          : formatear(respuesta, resuelta, redactar);
-
         // Un servidor puede devolverte el secreto que le mandaste: httpbin lo
         // hace, y muchos endpoints de depuracion tambien.
         const secretos = redactar && uri ? await entornos.secretosPara(uri) : [];
 
-        const documento = await vscode.workspace.openTextDocument({
-          content: redactarValores(texto, secretos),
-          language: "http",
-        });
+        const destino = respuestas.publicar(resuelta, respuesta, resultados,
+                                            { redactar, secretos });
+        const documento = await vscode.workspace.openTextDocument(destino);
+        await vscode.languages.setTextDocumentLanguage(documento, "http");
         await vscode.window.showTextDocument(documento, {
           viewColumn: vscode.ViewColumn.Beside,
           preserveFocus: true,

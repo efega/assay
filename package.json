@@ -2,7 +2,7 @@
   "name": "roost",
   "displayName": "Roost \u2014 HTTP client with tests",
   "description": "Run .http files, assert on the response, chain requests. No account, no cloud, no limits.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "publisher": "roost",
   "private": true,
   "license": "MIT",
@@ -71,6 +71,11 @@
         "command": "roost.seleccionarEntorno",
         "title": "Select environment",
         "category": "Roost"
+      },
+      {
+        "command": "roost.nuevoFichero",
+        "title": "New request file",
+        "category": "Roost"
       }
     ],
     "keybindings": [
@@ -96,7 +101,58 @@
           "description": "Mask credential-looking query parameters and headers in the response panel and log."
         }
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "roost.empezar",
+        "title": "Get started with Roost",
+        "description": "Send a request, turn it into a test, and keep your secrets out of git.",
+        "steps": [
+          {
+            "id": "primera",
+            "title": "Send your first request",
+            "description": "Create a `.http` file and press **Send** above any request line, or `Ctrl+Alt+R`.\n\nOne line is enough: `GET https://api.github.com/zen`\n\n[Create a request file](command:roost.nuevoFichero)",
+            "media": {
+              "markdown": "media/pasos/enviar.md",
+              "altText": "Sending a request"
+            },
+            "completionEvents": [
+              "onCommand:roost.enviar"
+            ]
+          },
+          {
+            "id": "asertos",
+            "title": "Turn it into a test",
+            "description": "Add assertions as comments. They run on every send and the result lands at the top of the response.\n\n```\n# @assert status 200\n# @assert time < 500\n# @assert body.$.items.length > 0\n```\n\nNo scripting sandbox, and the diff reads clean in code review.",
+            "media": {
+              "markdown": "media/pasos/asertos.md",
+              "altText": "Assertions"
+            }
+          },
+          {
+            "id": "cadena",
+            "title": "Chain requests",
+            "description": "Name a request and use its response in the next one. Roost runs the dependency on its own if it hasn't run yet.\n\n```\n### Log in\n# @name login\nPOST {{base}}/auth\n\n### Use it\nGET {{base}}/me\nAuthorization: Bearer {{login.response.body.$.token}}\n```",
+            "media": {
+              "markdown": "media/pasos/cadena.md",
+              "altText": "Chaining"
+            }
+          },
+          {
+            "id": "entornos",
+            "title": "Keep secrets out of git",
+            "description": "Environments live in `http-client.env.json`, which you commit. Secrets go in `http-client.private.env.json`, which you do not.\n\nRoost warns you if that file is missing from `.gitignore`.\n\n[Pick an environment](command:roost.seleccionarEntorno)",
+            "media": {
+              "markdown": "media/pasos/entornos.md",
+              "altText": "Environments"
+            },
+            "completionEvents": [
+              "onCommand:roost.seleccionarEntorno"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "compile": "tsc -p .",
@@ -117,7 +173,7 @@
     "typescript": "^5.4.0"
   },
   "galleryBanner": {
-    "color": "#1F2A24",
+    "color": "#121A17",
     "theme": "dark"
   },
   "qna": "marketplace",

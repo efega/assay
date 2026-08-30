@@ -80,9 +80,10 @@ suite("Roost instalado desde el .vsix", () => {
     const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
       "vscode.executeCodeLensProvider", documento.uri,
     );
-    assert.equal(lentes?.length, 1, "sin CodeLens: la extension no esta activa");
+    const envio = (lentes ?? []).filter((l) => l.command?.title.includes("Send"));
+    assert.equal(envio.length, 1, "sin CodeLens: la extension no esta activa");
 
-    const orden = lentes![0].command!;
+    const orden = envio[0].command!;
     await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
 
     const limite = Date.now() + 15000;

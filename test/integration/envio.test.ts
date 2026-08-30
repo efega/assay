@@ -68,9 +68,10 @@ suite("Roost · envio real", () => {
     const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
       "vscode.executeCodeLensProvider", documento.uri,
     );
-    assert.equal(lentes?.length, 1);
+    const envio = (lentes ?? []).filter((l) => l.command?.title.includes("Send"));
+    assert.equal(envio.length, 1);
 
-    const orden = lentes![0].command!;
+    const orden = envio[0].command!;
     await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
 
     const texto = await esperarRespuesta((t) => t.includes("HTTP 200"));
@@ -90,7 +91,7 @@ suite("Roost · envio real", () => {
     const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
       "vscode.executeCodeLensProvider", documento.uri,
     );
-    const orden = lentes![0].command!;
+    const orden = lentes!.find((l) => l.command?.title.includes("Send"))!.command!;
     await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
 
     const texto = await esperarRespuesta((t) => t.includes("assertions"));
@@ -114,10 +115,15 @@ suite("Roost · envio real", () => {
     const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
       "vscode.executeCodeLensProvider", documento.uri,
     );
-    assert.equal(lentes?.length, 2, "una lente por peticion");
+    const envio = (lentes ?? []).filter((l) => l.command?.title.includes("Send"));
+    assert.equal(envio.length, 2, "una lente de envio por peticion");
+    assert.ok(
+      (lentes ?? []).some((l) => l.command?.title.includes("runs login first")),
+      "deberia anunciarse la dependencia en el editor",
+    );
 
     // Solo se pide la segunda: la primera debe lanzarse sola.
-    const orden = lentes![1].command!;
+    const orden = envio[1].command!;
     await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
 
     const texto = await esperarRespuesta((t) => t.includes('"auth"'));
@@ -126,12 +132,33 @@ suite("Roost · envio real", () => {
     assert.match(texto, /1\/1 assertions passed/);
   });
 
+  test("el panel de respuesta no lleva su propio boton Send", async () => {
+    const documento = await abrirConContenido(`GET ${base}/hola`);
+    const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider", documento.uri,
+    );
+    const orden = lentes!.find((l) => l.command?.title.includes("Send"))!.command!;
+    await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
+    await esperarRespuesta((t) => t.includes("HTTP 200"));
+
+    const panel = vscode.window.visibleTextEditors
+      .find((e) => e.document.uri.scheme === "roost-response");
+    assert.ok(panel, "no se abrio el panel de respuesta");
+    assert.equal(panel.document.isUntitled, false, "no debe ser un buffer sin guardar");
+
+    const suyas = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider", panel.document.uri,
+    );
+    assert.equal((suyas ?? []).length, 0,
+      "el panel de respuesta no debe tener CodeLens");
+  });
+
   test("un host inalcanzable no rompe la extension", async () => {
     const documento = await abrirConContenido("GET http://127.0.0.1:1/nada");
     const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
       "vscode.executeCodeLensProvider", documento.uri,
     );
-    const orden = lentes![0].command!;
+    const orden = lentes!.find((l) => l.command?.title.includes("Send"))!.command!;
     // No debe lanzar: el error se comunica por interfaz, no por excepcion.
     await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
 

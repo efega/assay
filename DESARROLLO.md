@@ -58,6 +58,25 @@ codigo 0 cuando no encuentra ninguno, y un verde falso es peor que un fallo.
 Los modulos de `src/` no importan `vscode` salvo `extension.ts` y
 `entornosEditor.ts`. Por eso lo importante se prueba sin abrir un editor.
 
+## La captura del Marketplace
+
+`media/hero.png` **no es una maqueta**: es el producto funcionando, capturado
+de una ventana real.
+
+```bash
+ROOST_DEMO_PERFIL=/tmp/perfil npx vscode-test --config .vscode-test-demo.mjs
+```
+
+`test/demo/demo.test.ts` abre un `.http`, levanta un servidor local con datos
+creibles, envia de verdad y deja la ventana quieta para fotografiarla. Si el
+producto cambia, se vuelve a lanzar y la imagen se actualiza sola.
+
+## Cuidado al invocar tsc
+
+No canalices `tsc` por `head`: cierra la tuberia al cuarto renglon y puede
+cortar al compilador mientras escribe `out/`. Los tests corren entonces contra
+un build a medias y fallan de forma aparentemente aleatoria. Paso una vez.
+
 ## Idioma
 
 Las cadenas que ve el usuario estan en **ingles**: el mercado son 7,5 millones
