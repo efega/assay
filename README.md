@@ -8,10 +8,10 @@
 
 Plain `.http` files. No account, no cloud, nothing paywalled later.
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/roost.roost?label=marketplace&color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=roost.roost)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/roost.roost?color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=roost.roost)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/roost.roost?color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=roost.roost)
-[![License](https://img.shields.io/badge/license-MIT-0f6b63)](LICENSE)
+[![Version](https://vsmarketplacebadges.dev/version-short/roost.roost.svg?style=flat-square&color=0f6b63&label=marketplace)](https://marketplace.visualstudio.com/items?itemName=roost.roost)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/roost.roost.svg?style=flat-square&color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=roost.roost)
+[![Rating](https://vsmarketplacebadges.dev/rating-short/roost.roost.svg?style=flat-square&color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=roost.roost&ssr=false#review-details)
+[![License](https://img.shields.io/badge/license-MIT-0f6b63?style=flat-square)](LICENSE)
 
 </div>
 
