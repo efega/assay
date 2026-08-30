@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] — 2026-08-30
+## [0.1.0] - 2026-08-30
 
 First public release.
 
@@ -17,8 +17,8 @@ First public release.
   on its own if it hasn't run yet, with cycle detection and a depth limit.
 - **Environments.** `http-client.env.json` plus a private file for secrets that
   stays out of git. Roost warns if that file is not in `.gitignore`.
-- **Secret redaction.** Credential-looking query parameters and headers —
-  `set-cookie` included — are masked in the response panel and the log. Values
+- **Secret redaction.** Credential-looking query parameters and headers,
+  `set-cookie` included, are masked in the response panel and the log. Values
   from the private environment file are masked anywhere they appear, because
   servers echo back what you send.
 - **Read-only response documents** with a title that carries the outcome:

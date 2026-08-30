@@ -7,7 +7,7 @@ Content-Type: application/json
 
 { "email": "ana@acme.dev", "password": "{{password}}" }
 
-### Fetch the current user — login runs on its own
+### Fetch the current user (login runs on its own)
 GET {{base}}/me
 Authorization: Bearer {{login.response.body.$.token}}
 

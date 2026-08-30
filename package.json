@@ -1,6 +1,6 @@
 {
   "name": "roost",
-  "displayName": "Roost \u2014 HTTP client with tests",
+  "displayName": "Roost - HTTP client with tests",
   "description": "Run .http files, assert on the response, chain requests. No account, no cloud, nothing paywalled later.",
   "version": "0.1.0",
   "publisher": "roost",

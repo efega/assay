@@ -1,6 +1,6 @@
 # Roost
 
-**An HTTP client for VS Code that tests your API — and never holds your work hostage.**
+**An HTTP client for VS Code that tests your API. It never holds your work hostage.**
 
 Plain `.http` files. No account. No cloud. No request limits. Your requests live
 in your repo, next to the code they test.
@@ -27,7 +27,7 @@ Content-Type: application/json
 
 { "user": "ana", "password": "{{password}}" }
 
-### Use the token — login runs on its own if it hasn't yet
+### Use the token (login runs on its own if it hasn't yet)
 GET {{base}}/me
 Authorization: Bearer {{login.response.body.$.token}}
 
@@ -43,9 +43,9 @@ will run, and which requests it will fire first.
 
 | | |
 |---|---|
-| **Assertions built in** | Status, timing, headers and JSON paths. Declarative — no scripting sandbox, and the diff reads clean in code review. |
+| **Assertions built in** | Status, timing, headers and JSON paths. Declarative: no scripting sandbox, and the diff reads clean in code review. |
 | **Request chaining** | Use one response in the next request. Dependencies run on their own, with cycle detection and a depth limit. |
-| **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git — and Roost tells you if it isn't ignored yet. |
+| **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git, and Roost tells you if it isn't ignored yet. |
 | **Nothing is paywalled retroactively** | Your saved requests are yours. Export is always free. That is a promise, not a tier. |
 
 ## Works with the files you already have
@@ -102,7 +102,7 @@ existing files keep behaving exactly as before.
 - Resolved secrets are **never written to the log**. You see the reference
   (`login.response.body.$.token`), not its value.
 - Query parameters and headers that look like credentials are shown as `***`
-  — including `set-cookie`, where the session usually travels.
+  (`set-cookie` included, since that is where the session usually travels).
 - Values from your private environment file are masked **anywhere they appear**,
   including inside a response body, because servers do echo back what you sent.
 - Chained responses are dropped as soon as you edit the file, so a stale token
@@ -112,7 +112,7 @@ existing files keep behaving exactly as before.
 
 Roost masks what it knows is secret: credential-looking parameters and headers,
 and the exact values from your private environment file. It cannot guess that
-an arbitrary string in a response body is sensitive — doing so would corrupt
+an arbitrary string in a response body is sensitive, because doing so would corrupt
 real data. Turn redaction off with `roost.redactSecrets` when you need the raw
 response.
 
@@ -135,5 +135,5 @@ Early, and honest about it. Working today: parsing, variables, environments,
 assertions, chaining, secret redaction. Not yet: server-sent events, GraphQL
 helpers, cookie jar, a CLI runner for CI.
 
-Missing something? Open an issue — the roadmap is driven by what people
+Missing something? Open an issue. The roadmap is driven by what people
 actually ask for.
