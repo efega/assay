@@ -120,5 +120,14 @@
     "theme": "dark"
   },
   "qna": "marketplace",
-  "badges": []
+  "badges": [],
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TU-USUARIO/roost.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TU-USUARIO/roost/issues"
+  },
+  "homepage": "https://github.com/TU-USUARIO/roost#readme"
 }
