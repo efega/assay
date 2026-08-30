@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.1] - 2026-08-30
+
+### Fixed
+
+- **A header with an accented name silently corrupted the request.** The header
+  pattern followed RFC 7230 strictly, so a name like `X-Titulo` or `X-Grosse`
+  did not match. The parser stopped there and moved that line, **every header
+  after it, and the body** into the request body, with no warning. You sent a
+  broken request and never knew. Headers are now parsed leniently, and sending
+  an invalid name gives an error that names the offending header.
+
+### Added
+
+- Stress suite: 2,000 request files, 8 MB responses, binary bodies, redirect
+  loops, self-referencing variables, 200-link chains, malformed environment
+  files and 30 concurrent requests. It is what found the bug above.
+
 ## [0.1.0] - 2026-08-30
 
 First public release.

@@ -37,7 +37,13 @@ const SEPARADOR = /^###\s*(.*)$/;
 const VARIABLE = /^@([A-Za-z_][\w.-]*)\s*=\s*(.*)$/;
 const META_NOMBRE = /^\s*(?:#|\/\/)\s*@name\s+(.+?)\s*$/;
 const COMENTARIO = /^\s*(?:#|\/\/)/;
-const CABECERA = /^([!#$%&'*+\-.^_`|~0-9A-Za-z]+)\s*:\s*(.*)$/;
+// Deliberadamente permisivo: cualquier `nombre: valor` sin espacios en el
+// nombre cuenta como cabecera. Con el patron estricto de RFC 7230, una sola
+// cabecera con tilde -X-Titulo, X-Grosse- no encajaba, el bucle cortaba, y esa
+// linea MAS TODAS LAS SIGUIENTES, cabeceras y cuerpo incluidos, acababan
+// dentro del cuerpo en silencio. Mejor aceptarla aqui y que la capa HTTP diga
+// con claridad que el nombre no es valido.
+const CABECERA = /^([^\s:]+)\s*:\s*(.*)$/;
 const METODOS = new Set([
   "GET", "POST", "PUT", "PATCH", "DELETE", "HEAD",
   "OPTIONS", "TRACE", "CONNECT",

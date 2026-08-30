@@ -28,6 +28,9 @@ export class HttpError extends Error {
   }
 }
 
+/** Nombre de cabecera valido segun RFC 7230. */
+const TOKEN = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/;
+
 const SIN_CUERPO = new Set(["GET", "HEAD", "OPTIONS", "TRACE", "CONNECT"]);
 
 export async function ejecutar(
@@ -44,6 +47,18 @@ export async function ejecutar(
       `Invalid URL: ${peticion.url}. ` +
       `If you are using variables, check they are declared with @name = value.`,
     );
+  }
+
+  // Se comprueba aqui para poder decir cual es la cabecera mala. fetch lanza
+  // un TypeError generico que no dice cual, y el usuario se queda a ciegas.
+  for (const nombre of Object.keys(peticion.cabeceras)) {
+    if (!TOKEN.test(nombre)) {
+      throw new HttpError(
+        `Invalid header name: "${nombre}". Header names can only contain ` +
+        `letters, digits and the characters !#$%&'*+-.^_\`|~ (no spaces or ` +
+        `accented characters).`,
+      );
+    }
   }
 
   const control = new AbortController();

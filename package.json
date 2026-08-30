@@ -2,7 +2,7 @@
   "name": "roost",
   "displayName": "Roost - HTTP client with tests",
   "description": "Run .http files, assert on the response, chain requests. No account, no cloud, nothing paywalled later.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "efega",
   "private": true,
   "license": "MIT",
@@ -159,9 +159,10 @@
     "watch": "tsc -p . -w",
     "test:unit": "tsc -p . && node --test out/test/unit/*.test.js",
     "test:integration": "tsc -p . && vscode-test",
-    "test": "npm run test:unit && npm run test:integration && npm run test:instalada",
+    "test": "npm run test:unit && npm run test:estres && npm run test:integration && npm run test:instalada",
     "vsce:package": "npm test && npx --yes @vscode/vsce package --no-dependencies",
-    "test:instalada": "node scripts/probar-instalada.mjs"
+    "test:instalada": "node scripts/probar-instalada.mjs",
+    "test:estres": "tsc -p . && node --test out/test/estres/limites.test.js"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
