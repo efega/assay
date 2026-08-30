@@ -12,6 +12,7 @@ import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
 import { ejecutar, redactarUrl, HttpError } from "./http";
 import { evaluarTodos, resumir } from "./asserts";
 import { ESQUEMA, ProveedorDeRespuestas } from "./respuesta";
+import { Diagnosticos } from "./diagnosticos";
 import {
   Almacen, ErrorDeCadena, aplicar, referenciasDe, resolverDependencias,
 } from "./cadena";
@@ -96,6 +97,10 @@ export function activate(contexto: vscode.ExtensionContext): void {
   // guardar que el usuario tenga que ir cerrando.
   const respuestas = new ProveedorDeRespuestas();
   contexto.subscriptions.push(respuestas);
+
+  // Los asertos que fallan se marcan en la propia linea del fichero.
+  const diagnosticos = new Diagnosticos();
+  contexto.subscriptions.push(diagnosticos);
   contexto.subscriptions.push(
     vscode.workspace.registerTextDocumentContentProvider(ESQUEMA, respuestas),
   );
@@ -118,6 +123,8 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.workspace.onDidChangeTextDocument((evento) => {
       if (evento.document.languageId === "http") {
         almacenes.get(evento.document.uri.toString())?.limpiar();
+        // Al editar, los avisos de asertos dejan de corresponder a lo que hay.
+        diagnosticos.limpiar(evento.document.uri);
       }
     }),
   );
@@ -131,7 +138,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.commands.registerCommand(
       "roost.enviar",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
-        enviar(peticion, fichero, uri, salida, entornos, respuestas),
+        enviar(peticion, fichero, uri, salida, entornos, respuestas, diagnosticos),
     ),
   );
 
@@ -147,7 +154,8 @@ export function activate(contexto: vscode.ExtensionContext): void {
         void vscode.window.showWarningMessage("No request found at the cursor.");
         return;
       }
-      void enviar(peticion, fichero, editor.document.uri, salida, entornos, respuestas);
+      void enviar(peticion, fichero, editor.document.uri, salida, entornos,
+                  respuestas, diagnosticos);
     }),
   );
 
@@ -238,6 +246,7 @@ async function enviar(
   salida: vscode.OutputChannel,
   entornos: GestorDeEntornos,
   respuestas: ProveedorDeRespuestas,
+  diagnosticos: Diagnosticos,
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
@@ -275,6 +284,14 @@ async function enviar(
         const fallan = resultados.filter((r) => !r.ok).length;
         const informe = resumir(resultados);
 
+        if (uri) {
+          diagnosticos.publicar(
+            uri,
+            vscode.workspace.textDocuments.find((d) => d.uri.toString() === uri.toString()),
+            peticion, resultados,
+          );
+        }
+
         // Un servidor puede devolverte el secreto que le mandaste: httpbin lo
         // hace, y muchos endpoints de depuracion tambien.
         const secretos = redactar && uri ? await entornos.secretosPara(uri) : [];
@@ -295,12 +312,9 @@ async function enviar(
           (resultados.length ? ` · ${resultados.length - fallan}/${resultados.length} assertions` : ""),
         );
         if (informe) salida.appendLine(informe);
-        if (fallan > 0) {
-          void vscode.window.showWarningMessage(
-            `${fallan} of ${resultados.length} assertions failed in ` +
-            `${peticion.nombre ?? acortar(oculta(peticion.url), 40)}.`,
-          );
-        }
+        // Sin ventana emergente: el fallo ya se ve subrayado en la linea del
+        // aserto y en el panel de Problemas. Un aviso modal encima seria
+        // ruido para algo que el usuario ya esta viendo.
       } catch (error) {
         const mensaje =
           error instanceof ErrorDeCadena || error instanceof HttpError

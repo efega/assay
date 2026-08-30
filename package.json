@@ -2,7 +2,7 @@
   "name": "roost",
   "displayName": "Roost - HTTP client with tests",
   "description": "Run .http files, assert on the response, chain requests. No account, no cloud, nothing paywalled later.",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "publisher": "efega",
   "private": true,
   "license": "MIT",
@@ -151,6 +151,13 @@
             ]
           }
         ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "http",
+        "scopeName": "source.http",
+        "path": "./syntaxes/http.tmLanguage.json"
       }
     ]
   },

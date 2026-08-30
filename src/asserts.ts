@@ -27,6 +27,8 @@ export interface Aserto {
   esperado?: string;
   /** Texto original, para el mensaje de error. */
   origen: string;
+  /** Linea 0-indexada donde se escribio, para senyalarla en el editor. */
+  linea: number;
 }
 
 export interface ResultadoAserto {
@@ -41,7 +43,7 @@ const OPERADORES = new Set<string>([
 ]);
 
 /** `# @assert status < 300` -> Aserto. Devuelve null si la linea no lo es. */
-export function parseAserto(linea: string): Aserto | null {
+export function parseAserto(linea: string, numero = 0): Aserto | null {
   const m = /^\s*(?:#|\/\/)\s*@assert\s+(.+?)\s*$/.exec(linea);
   if (!m) return null;
 
@@ -53,19 +55,19 @@ export function parseAserto(linea: string): Aserto | null {
 
   // `# @assert status 200` -> igualdad implicita
   if (trozos.length === 2 && !OPERADORES.has(trozos[1])) {
-    return { objetivo, operador: "=", esperado: trozos[1], origen: cuerpo };
+    return { objetivo, operador: "=", esperado: trozos[1], origen: cuerpo, linea: numero };
   }
   if (trozos.length < 2) return null;
 
   const bruto = trozos[1];
   if (!OPERADORES.has(bruto)) {
     // `# @assert body.$.msg hola que tal` -> igualdad con valor con espacios
-    return { objetivo, operador: "=", esperado: trozos.slice(1).join(" "), origen: cuerpo };
+    return { objetivo, operador: "=", esperado: trozos.slice(1).join(" "), origen: cuerpo, linea: numero };
   }
 
   const operador = (bruto === "==" ? "=" : bruto) as Operador;
   const esperado = trozos.slice(2).join(" ") || undefined;
-  return { objetivo, operador, esperado, origen: cuerpo };
+  return { objetivo, operador, esperado, origen: cuerpo, linea: numero };
 }
 
 function valorDe(objetivo: string, respuesta: HttpResponse): Resultado {
@@ -99,7 +101,7 @@ function comparaNumeros(a: Resultado, b: string | undefined): [number, number] |
 
 export function evaluar(aserto: Aserto, respuesta: HttpResponse): ResultadoAserto {
   const valor = valorDe(aserto.objetivo, respuesta);
-  const obtenido = valor === AUSENTE ? "(ausente)" : aTexto(valor);
+  const obtenido = valor === AUSENTE ? "(missing)" : aTexto(valor);
   const base = { aserto, obtenido };
 
   switch (aserto.operador) {

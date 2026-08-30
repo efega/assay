@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.2.0] - 2026-08-30
+
+### Added
+
+- **Syntax highlighting.** `.http` files were rendering as plain text. Methods,
+  URLs, headers, variables, `{{substitutions}}`, section titles and assertions
+  are now coloured. It uses standard TextMate scopes, so it follows your theme
+  instead of imposing one, and works the same in light and dark.
+- **Failed assertions are underlined in the editor**, on their own line, with
+  the value that came back. They also show up in the Problems panel and are
+  navigable with `F8`. When something fails, you are looking at your request
+  file, not at the response.
+- **Pass and fail are now visually distinct.** They were both grey comment
+  text, so the most important line in the panel had no visual weight. Passes
+  read green and failures red, using the same scopes your theme uses for
+  diffs. `HTTP 2xx` and `HTTP 4xx/5xx` follow the same rule.
+
+### Changed
+
+- The popup that appeared on a failed assertion is gone. The failure is
+  already visible in the editor and in the Problems panel; a modal on top of
+  that was noise.
+
+### Fixed
+
+- `(ausente)` appeared in English output when an assertion targeted a missing
+  path. It now reads `(missing)`.
+
 ## [0.1.1] - 2026-08-30
 
 ### Fixed

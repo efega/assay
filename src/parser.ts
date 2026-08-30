@@ -98,6 +98,9 @@ export function parse(texto: string): HttpFile {
   for (const bloque of bloques) {
     let nombre = bloque.titulo;
     const asertos: Aserto[] = [];
+    // El primer bloque no lleva separador, asi que sus lineas empiezan en el
+    // mismo indice; los demas van desplazados uno por la linea del ###.
+    const desplazamiento = bloque.titulo !== undefined || bloque.inicio > 0 ? 1 : 0;
     let i = 0;
 
     // Preambulo: variables, metadatos y comentarios antes de la peticion.
@@ -108,7 +111,7 @@ export function parse(texto: string): HttpFile {
       const meta = META_NOMBRE.exec(linea);
       if (meta) { nombre = meta[1]; i++; continue; }
 
-      const aserto = parseAserto(linea);
+      const aserto = parseAserto(linea, bloque.inicio + i + desplazamiento);
       if (aserto) { asertos.push(aserto); i++; continue; }
 
       const variable = VARIABLE.exec(linea.trim());
@@ -139,7 +142,7 @@ export function parse(texto: string): HttpFile {
       if (COMENTARIO.test(linea)) {
         // Los asertos son igual de validos antes que despues de la peticion:
         // unos vienen del estilo de REST Client y otros del de IntelliJ.
-        const tardio = parseAserto(linea);
+        const tardio = parseAserto(linea, bloque.inicio + i + desplazamiento);
         if (tardio) asertos.push(tardio);
         i++;
         continue;
@@ -152,10 +155,10 @@ export function parse(texto: string): HttpFile {
 
     // Cuerpo: el resto, sin comentarios sueltos ni lineas en blanco finales.
     // Los asertos que aparezcan aqui tambien cuentan, y no ensucian el cuerpo.
-    for (const linea of bloque.lineas.slice(i)) {
-      const tardio = parseAserto(linea);
+    bloque.lineas.slice(i).forEach((linea, n) => {
+      const tardio = parseAserto(linea, bloque.inicio + i + n + desplazamiento);
       if (tardio) asertos.push(tardio);
-    }
+    });
     const cuerpoLineas = bloque.lineas.slice(i).filter((l) => !COMENTARIO.test(l));
     while (cuerpoLineas.length && !cuerpoLineas[cuerpoLineas.length - 1].trim()) {
       cuerpoLineas.pop();

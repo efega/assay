@@ -12,6 +12,8 @@ import * as http from "node:http";
 import type { AddressInfo } from "node:net";
 import * as vscode from "vscode";
 
+const SALTO = String.fromCharCode(10);
+
 let servidor: http.Server;
 let base = "";
 
@@ -151,6 +153,66 @@ suite("Roost · envio real", () => {
     );
     assert.equal((suyas ?? []).length, 0,
       "el panel de respuesta no debe tener CodeLens");
+  });
+
+  test("un aserto que falla se subraya en su propia linea", async () => {
+    const documento = await abrirConContenido([
+      `GET ${base}/hola`,          // linea 0
+      "# @assert status 200",      // linea 1, pasa
+      "# @assert status 500",      // linea 2, falla
+      "# @assert time < 1",        // linea 3, falla
+    ].join(SALTO));
+
+    const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider", documento.uri);
+    const orden = lentes!.find((l) => l.command?.title.includes("Send"))!.command!;
+    await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
+    await esperarRespuesta((t) => t.includes("assertions"));
+
+    const limite = Date.now() + 10000;
+    let avisos: readonly vscode.Diagnostic[] = [];
+    while (Date.now() < limite && avisos.length < 2) {
+      avisos = vscode.languages.getDiagnostics(documento.uri);
+      if (avisos.length < 2) await new Promise((r) => setTimeout(r, 150));
+    }
+
+    assert.equal(avisos.length, 2, "deberia haber un aviso por aserto fallido");
+    const lineas = avisos.map((d) => d.range.start.line).sort();
+    assert.deepEqual(lineas, [2, 3], "en las lineas de los que fallan, no en otras");
+
+    for (const d of avisos) {
+      assert.equal(d.source, "Roost");
+      assert.equal(d.severity, vscode.DiagnosticSeverity.Warning,
+        "un aserto fallido informa sobre el servidor, no es un error del fichero");
+      assert.match(d.message, /Assertion failed/);
+    }
+    assert.match(avisos.find((d) => d.range.start.line === 2)!.message,
+      /got 200/, "el mensaje debe llevar el valor obtenido");
+  });
+
+  test("editar el fichero retira los avisos, que ya no corresponden", async () => {
+    const documento = await abrirConContenido([
+      `GET ${base}/hola`,
+      "# @assert status 404",
+    ].join(SALTO));
+
+    const lentes = await vscode.commands.executeCommand<vscode.CodeLens[]>(
+      "vscode.executeCodeLensProvider", documento.uri);
+    const orden = lentes!.find((l) => l.command?.title.includes("Send"))!.command!;
+    await vscode.commands.executeCommand(orden.command, ...(orden.arguments ?? []));
+
+    const limite = Date.now() + 10000;
+    while (Date.now() < limite && vscode.languages.getDiagnostics(documento.uri).length === 0) {
+      await new Promise((r) => setTimeout(r, 150));
+    }
+    assert.ok(vscode.languages.getDiagnostics(documento.uri).length > 0);
+
+    const editor = vscode.window.visibleTextEditors.find((e) => e.document === documento)!;
+    await editor.edit((b) => b.insert(new vscode.Position(0, 0), "# tocado" + SALTO));
+    await new Promise((r) => setTimeout(r, 500));
+
+    assert.equal(vscode.languages.getDiagnostics(documento.uri).length, 0,
+      "tras editar, los avisos apuntarian a lineas equivocadas");
   });
 
   test("un host inalcanzable no rompe la extension", async () => {

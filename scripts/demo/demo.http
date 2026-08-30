@@ -14,3 +14,4 @@ Authorization: Bearer {{login.response.body.$.token}}
 # @assert status 200
 # @assert time < 500
 # @assert body.$.roles.length > 0
+# @assert body.$.plan enterprise

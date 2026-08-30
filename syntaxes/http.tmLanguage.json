@@ -1,0 +1,233 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HTTP",
+  "scopeName": "source.http",
+  "comment": "Ambitos estandar a proposito: asi cada tema del usuario elige sus propios colores y funciona igual en claro y en oscuro. Los colores fijos se ven bien en el tema del autor y mal en el de todos los demas.",
+  "patterns": [
+    {
+      "include": "#resultado-aserto"
+    },
+    {
+      "include": "#separador"
+    },
+    {
+      "include": "#aserto"
+    },
+    {
+      "include": "#metadato"
+    },
+    {
+      "include": "#comentario"
+    },
+    {
+      "include": "#variable-definicion"
+    },
+    {
+      "include": "#linea-respuesta"
+    },
+    {
+      "include": "#linea-peticion"
+    },
+    {
+      "include": "#cabecera"
+    },
+    {
+      "include": "#sustitucion"
+    }
+  ],
+  "repository": {
+    "separador": {
+      "comment": "### Titulo del bloque. Se le da ambito de seccion para que destaque como un encabezado y el fichero se pueda recorrer de un vistazo.",
+      "match": "^(###)(.*)$",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.heading.http"
+        },
+        "2": {
+          "name": "entity.name.section.http"
+        }
+      }
+    },
+    "aserto": {
+      "comment": "# @assert objetivo operador valor. Es lo que distingue a este formato, asi que se colorea pieza a pieza en vez de dejarlo como comentario gris.",
+      "match": "^\\s*(?:#|//)\\s*(@assert)\\s+([\\w.$\\[\\]'\"-]+)(?:\\s+(=|==|!=|<=|>=|<|>|contains|matches|exists|empty))?\\s*(.*)$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.assert.http"
+        },
+        "2": {
+          "name": "variable.other.property.http"
+        },
+        "3": {
+          "name": "keyword.operator.comparison.http"
+        },
+        "4": {
+          "name": "string.unquoted.expected.http"
+        }
+      }
+    },
+    "metadato": {
+      "comment": "# @name, # @prompt y similares.",
+      "match": "^\\s*(?:#|//)\\s*(@[a-zA-Z][\\w-]*)\\s*(.*)$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.http"
+        },
+        "2": {
+          "name": "entity.name.function.http"
+        }
+      }
+    },
+    "comentario": {
+      "match": "^\\s*(?:#|//).*$",
+      "name": "comment.line.http"
+    },
+    "variable-definicion": {
+      "comment": "@base = https://...",
+      "match": "^\\s*(@)([A-Za-z_][\\w.-]*)\\s*(=)\\s*(.*)$",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.variable.http"
+        },
+        "2": {
+          "name": "variable.other.definition.http"
+        },
+        "3": {
+          "name": "keyword.operator.assignment.http"
+        },
+        "4": {
+          "name": "string.unquoted.value.http"
+        }
+      }
+    },
+    "linea-respuesta": {
+      "comment": "HTTP 200 OK, en el panel de respuesta. El codigo se marca segun su familia: los 2xx como algo anyadido y los 4xx/5xx como algo borrado, que en la practica totalidad de temas se pintan en verde y rojo. Asi un error se ve rojo sin fijar ni un color.",
+      "patterns": [
+        {
+          "match": "^(HTTP)(?:/[\\d.]+)?\\s+([23]\\d\\d)\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "keyword.control.http"
+            },
+            "2": {
+              "name": "markup.inserted.http"
+            },
+            "3": {
+              "name": "markup.inserted.http"
+            }
+          }
+        },
+        {
+          "match": "^(HTTP)(?:/[\\d.]+)?\\s+([45]\\d\\d)\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "keyword.control.http"
+            },
+            "2": {
+              "name": "markup.deleted.http"
+            },
+            "3": {
+              "name": "markup.deleted.http"
+            }
+          }
+        },
+        {
+          "match": "^(HTTP)(?:/[\\d.]+)?\\s+(\\d{3})\\s*(.*)$",
+          "captures": {
+            "1": {
+              "name": "keyword.control.http"
+            },
+            "2": {
+              "name": "constant.numeric.http"
+            },
+            "3": {
+              "name": "string.unquoted.http"
+            }
+          }
+        }
+      ]
+    },
+    "linea-peticion": {
+      "match": "^\\s*(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS|TRACE|CONNECT)\\s+(\\S+)(?:\\s+(HTTP/[\\d.]+))?\\s*$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.verb.http"
+        },
+        "2": {
+          "name": "markup.underline.link.http"
+        },
+        "3": {
+          "name": "constant.language.version.http"
+        }
+      }
+    },
+    "cabecera": {
+      "comment": "Nombre: valor. Solo antes de la primera linea en blanco, pero TextMate no lleva ese estado, asi que se exige que el nombre no lleve espacios ni comillas para no colorear lineas de JSON del cuerpo.",
+      "match": "^([A-Za-z][\\w.-]*)\\s*(:)\\s*(.*)$",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.header.http"
+        },
+        "2": {
+          "name": "punctuation.separator.key-value.http"
+        },
+        "3": {
+          "name": "string.unquoted.header-value.http"
+        }
+      }
+    },
+    "sustitucion": {
+      "comment": "{{variable}} y {{peticion.response.body.$.ruta}}, en cualquier sitio.",
+      "match": "(\\{\\{)\\s*([\\w.$\\[\\]'\"-]+)\\s*(\\}\\})",
+      "captures": {
+        "1": {
+          "name": "punctuation.definition.template-expression.begin.http"
+        },
+        "2": {
+          "name": "variable.other.substitution.http"
+        },
+        "3": {
+          "name": "punctuation.definition.template-expression.end.http"
+        }
+      }
+    },
+    "resultado-aserto": {
+      "comment": "Resumen de asertos en el panel de respuesta. Se marcan con los ambitos de diff -inserted y deleted- porque practicamente todos los temas los pintan en verde y rojo. Asi un fallo se ve rojo sin fijar ni un solo color y sin romper los temas claros.",
+      "patterns": [
+        {
+          "match": "^\\s*#\\s+(PASS)\\s+(.*)$",
+          "captures": {
+            "1": {
+              "name": "markup.inserted.pass.http"
+            },
+            "2": {
+              "name": "comment.line.result.http"
+            }
+          }
+        },
+        {
+          "match": "^\\s*#\\s+(FAIL)\\s+(.*?)(->.*)?$",
+          "captures": {
+            "1": {
+              "name": "markup.deleted.fail.http"
+            },
+            "2": {
+              "name": "markup.deleted.fail.http"
+            },
+            "3": {
+              "name": "string.unquoted.actual.http"
+            }
+          }
+        },
+        {
+          "match": "^\\s*#\\s+(\\d+)/(\\d+)\\s+(assertions passed)\\s*$",
+          "name": "markup.inserted.summary.http"
+        },
+        {
+          "match": "^\\s*#\\s+(\\d+ of \\d+ assertions failed)\\s*$",
+          "name": "markup.deleted.summary.http"
+        }
+      ]
+    }
+  }
+}
