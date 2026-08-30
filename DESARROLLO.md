@@ -11,8 +11,19 @@ npm run test:integration   # arranca un VS Code real con la extension cargada
 npm test                   # los dos
 ```
 
-Para probarla a mano: F5 abre una ventana de desarrollo con la extension
-cargada. Abre `samples/ejemplo.http`.
+## Probarla a mano
+
+**F5**. Funciona tanto si abres la carpeta `extension/` como la raiz del
+repositorio: hay un `.vscode/launch.json` en cada una.
+
+Compila antes de arrancar y abre directamente `samples/` en la ventana nueva,
+asi que el ejemplo esta a un clic. La tarea de compilado invoca
+`.node/.../node.exe` con una ruta absoluta, sin depender de que Node este en
+el PATH del sistema.
+
+Si F5 abre el selector de depurador en vez de la extension, es que VS Code no
+encuentra el `launch.json`: comprueba que tienes abierta una de esas dos
+carpetas y no otra.
 
 ## Estructura
 

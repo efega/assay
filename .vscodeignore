@@ -1,6 +1,7 @@
 # Runtime de Node del proyecto: 91 MB que no pintan nada en el paquete.
 .node/**
 node_modules/**
+.vscode/**
 .vscode-test/**
 .vscode-test.mjs
 
