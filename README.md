@@ -8,9 +8,9 @@
 
 Plain `.http` files. No account, no cloud, nothing paywalled later.
 
-[![Version](https://vsmarketplacebadges.dev/version-short/efega.roost.svg?style=flat-square&color=0f6b63&label=marketplace)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
-[![Installs](https://vsmarketplacebadges.dev/installs-short/efega.roost.svg?style=flat-square&color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
-[![Rating](https://vsmarketplacebadges.dev/rating-short/efega.roost.svg?style=flat-square&color=0f6b63)](https://marketplace.visualstudio.com/items?itemName=efega.roost&ssr=false#review-details)
+[![Install](https://img.shields.io/badge/install-from%20Marketplace-0f6b63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
+[![Version](https://badgen.net/vs-marketplace/v/efega.roost?color=0f6b63&labelColor=3a3a3a)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-0f6b63?style=flat-square)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-0f6b63?style=flat-square)](LICENSE)
 
 </div>
