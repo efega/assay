@@ -1,11 +1,10 @@
 /**
  * Parser del formato .http / .rest.
  *
- * Compatible con la sintaxis de REST Client (humao), que es un estandar de
- * facto con 7,5 millones de instalaciones. Esa compatibilidad es la baza
- * principal del producto: coste de migracion cero, y los ficheros son texto
- * plano versionable en git, que es justo lo que los usuarios de Thunder
- * Client echaron de menos cuando les cerraron sus colecciones.
+ * Compatible con la sintaxis de REST Client, que es un estandar de facto:
+ * quien ya tiene ficheros .http no tiene que migrar nada. Y son texto plano,
+ * versionables en git junto al codigo que prueban, en vez de vivir dentro de
+ * una herramienta.
  *
  * Sin dependencias de vscode a proposito: asi se puede probar sin editor.
  */

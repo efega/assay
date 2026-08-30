@@ -1,10 +1,6 @@
 /**
  * Asertos sobre la respuesta.
  *
- * Es la peticion mas votada de REST Client: 59 pulgares arriba, abierta desde
- * hace casi ocho anyos. Es tambien la funcion por la que cobran Postman e
- * Insomnia, asi que va en la capa de pago.
- *
  * Sintaxis declarativa, en metadatos del propio fichero:
  *
  *     # @assert status 200

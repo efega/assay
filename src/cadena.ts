@@ -1,9 +1,8 @@
 /**
  * Encadenamiento de peticiones.
  *
- * Segunda peticion mas votada de REST Client (54 votos, 5,7 anyos). Sin esto
- * los asertos solo sirven para endpoints publicos: cualquier API real exige
- * autenticarse primero, y eso es login -> token -> usar el token.
+ * Sin esto los asertos solo sirven para endpoints publicos: cualquier API
+ * real exige autenticarse primero, y eso es login -> token -> usar el token.
  *
  * Sintaxis compatible con REST Client:
  *

@@ -83,9 +83,3 @@ Las cadenas que ve el usuario estan en **ingles**: el mercado son 7,5 millones
 de desarrolladores anglofonos. Los comentarios y los nombres internos estan en
 espanyol, y no los ve nadie de fuera.
 
-## De donde salen las decisiones
-
-Ninguna funcionalidad se eligio por intuicion. Ver
-[`../research/HALLAZGOS.md`](../research/HALLAZGOS.md) para los datos y
-[`../research/DISTRIBUCION.md`](../research/DISTRIBUCION.md) para el plan de
-distribucion.

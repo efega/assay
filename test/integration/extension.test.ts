@@ -8,6 +8,7 @@
  */
 
 import * as assert from "node:assert/strict";
+import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
 
@@ -144,20 +145,39 @@ suite("Roost", () => {
     );
   });
 
-  test("los entornos del ejemplo se cargan desde disco", async () => {
+  test("los entornos se cargan del disco y el privado pisa al publico", async () => {
     const { cargar } = await import("../../src/entornosEditor");
     const { nombresDe, variablesDe } = await import("../../src/entornos");
 
-    const { publico, privado, carpeta } = await cargar(vscode.Uri.file(EJEMPLO));
+    // Los ficheros se crean aqui a proposito. El de secretos esta en
+    // .gitignore -como debe-, asi que un test que dependiera del de samples/
+    // fallaria en cualquier clon recien hecho del repositorio.
+    const dir = path.join(os.tmpdir(), `roost-env-${Date.now()}`);
+    await vscode.workspace.fs.createDirectory(vscode.Uri.file(dir));
+    const escribir = (nombre: string, datos: unknown) =>
+      vscode.workspace.fs.writeFile(
+        vscode.Uri.file(path.join(dir, nombre)),
+        Buffer.from(JSON.stringify(datos), "utf8"),
+      );
+    await escribir("http-client.env.json", {
+      dev: { base: "https://dev.example.com", token: "de-ejemplo" },
+      prod: { base: "https://example.com" },
+    });
+    await escribir("http-client.private.env.json", {
+      dev: { token: "el-de-verdad" },
+    });
+
+    const { publico, privado, carpeta } = await cargar(
+      vscode.Uri.file(path.join(dir, "peticiones.http")));
     assert.ok(carpeta, "no encontro la carpeta con los ficheros de entorno");
     assert.deepEqual(nombresDe(publico, privado), ["dev", "prod"]);
 
     const dev = variablesDe(publico, privado, "dev");
-    assert.equal(dev.base, "https://httpbin.org");
-    assert.equal(dev.token, "secreto-solo-local", "el privado debe fusionarse");
+    assert.equal(dev.base, "https://dev.example.com", "hereda del publico");
+    assert.equal(dev.token, "el-de-verdad", "el privado debe pisar al publico");
 
     const prod = variablesDe(publico, privado, "prod");
-    assert.equal(prod.base, "https://postman-echo.com");
+    assert.equal(prod.base, "https://example.com");
     assert.equal(prod.token, undefined, "prod no define token");
   });
 
