@@ -27,8 +27,8 @@ suite("Roost instalado desde el .vsix", () => {
   suiteTeardown(() => servidor.close());
 
   test("la extension esta instalada, no en modo desarrollo", async () => {
-    const ext = vscode.extensions.getExtension("roost.roost");
-    assert.ok(ext, "no aparece roost.roost entre las instaladas");
+    const ext = vscode.extensions.getExtension("efega.roost");
+    assert.ok(ext, "no aparece efega.roost entre las instaladas");
     assert.equal(
       ext.extensionKind === vscode.ExtensionKind.UI ||
       ext.extensionKind === vscode.ExtensionKind.Workspace,
@@ -42,7 +42,7 @@ suite("Roost instalado desde el .vsix", () => {
   });
 
   test("el manifiesto publicado declara lo que promete", async () => {
-    const ext = vscode.extensions.getExtension("roost.roost")!;
+    const ext = vscode.extensions.getExtension("efega.roost")!;
     const p = ext.packageJSON;
     assert.equal(p.main, "./out/src/extension.js");
     assert.deepEqual(p.activationEvents, ["onLanguage:http"]);
@@ -53,7 +53,7 @@ suite("Roost instalado desde el .vsix", () => {
   });
 
   test("activa al abrir un .http y registra sus comandos", async () => {
-    const ext = vscode.extensions.getExtension("roost.roost")!;
+    const ext = vscode.extensions.getExtension("efega.roost")!;
     const documento = await vscode.workspace.openTextDocument({
       language: "http",
       content: `GET ${base}/ping`,

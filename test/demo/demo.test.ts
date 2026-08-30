@@ -48,7 +48,7 @@ suite("demo", () => {
 
     // La activacion es onLanguage:http y tarda un poco: sin esperar, el
     // proveedor de CodeLens todavia no esta registrado.
-    await vscode.extensions.getExtension("roost.roost")?.activate();
+    await vscode.extensions.getExtension("efega.roost")?.activate();
 
     let lentes: vscode.CodeLens[] = [];
     const limite = Date.now() + 15000;

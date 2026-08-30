@@ -28,7 +28,7 @@ async function abrirEjemplo(): Promise<vscode.TextDocument> {
 
 suite("Roost", () => {
   test("la extension se activa", async () => {
-    const ext = vscode.extensions.getExtension("roost.roost");
+    const ext = vscode.extensions.getExtension("efega.roost");
     assert.ok(ext, "no se encuentra la extension en el host");
     await ext.activate();
     assert.equal(ext.isActive, true);
