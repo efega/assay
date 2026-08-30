@@ -103,8 +103,9 @@
     "watch": "tsc -p . -w",
     "test:unit": "tsc -p . && node --test out/test/unit/*.test.js",
     "test:integration": "tsc -p . && vscode-test",
-    "test": "npm run test:unit && npm run test:integration",
-    "vsce:package": "npm test && npx --yes @vscode/vsce package --no-dependencies"
+    "test": "npm run test:unit && npm run test:integration && npm run test:instalada",
+    "vsce:package": "npm test && npx --yes @vscode/vsce package --no-dependencies",
+    "test:instalada": "node scripts/probar-instalada.mjs"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",

@@ -6,9 +6,10 @@ falta instalarlo en el sistema.
 ```bash
 export PATH="$PWD/.node/node-v22.14.0-win-x64:$PATH"
 npm install
-npm run test:unit          # parser, asertos, cadena, entornos, redaccion
-npm run test:integration   # arranca un VS Code real con la extension cargada
-npm test                   # los dos
+npm run test:unit          # parser, asertos, cadena, entornos, ejecucion HTTP
+npm run test:integration   # VS Code real, cargando el codigo fuente
+npm run test:instalada     # empaqueta, instala el .vsix y lo ejercita
+npm test                   # los tres
 ```
 
 ## Probarla a mano
@@ -24,6 +25,22 @@ el PATH del sistema.
 Si F5 abre el selector de depurador en vez de la extension, es que VS Code no
 encuentra el `launch.json`: comprueba que tienes abierta una de esas dos
 carpetas y no otra.
+
+## Tres niveles de prueba, y por que hacen falta los tres
+
+| | Que ve |
+|---|---|
+| `test/unit/` | Las piezas por separado, contra un servidor HTTP local. Sin red: un test que depende de httpbin deja de creerse cuando httpbin falla. |
+| `test/integration/` | Un VS Code real con el **codigo fuente** cargado. Pulsa el CodeLens y comprueba que la respuesta aparece. |
+| `test/instalada/` | Un VS Code limpio con el **.vsix instalado**. Es lo unico que ve lo mismo que un usuario. |
+
+El tercero no es redundante: los dos primeros cargan `src/` por
+`extensionDevelopmentPath`, asi que **no detectan que `.vscodeignore` haya
+excluido un fichero necesario**. Un fallo asi funciona en desarrollo y revienta
+en cuanto alguien instala la extension.
+
+El guion tambien falla si se ejecutan **cero** tests. vscode-test sale con
+codigo 0 cuando no encuentra ninguno, y un verde falso es peor que un fallo.
 
 ## Estructura
 
