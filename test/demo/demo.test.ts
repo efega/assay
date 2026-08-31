@@ -39,7 +39,12 @@ suite("demo", () => {
 
     const plantilla = fs.readFileSync(
       path.join(__dirname, "..", "..", "..", "scripts", "demo", "demo.http"), "utf8");
-    const destino = path.join(os.tmpdir(), "assay-demo", "requests.http");
+    // La ruta sale escrita en la captura del Marketplace. Por defecto es el
+    // temporal del sistema, que en Windows lleva el nombre del usuario dentro;
+    // para la captura publicada conviene pasar una raiz neutra:
+    //   ASSAY_DEMO_RAIZ=C:\assay-demo
+    const raiz = process.env.ASSAY_DEMO_RAIZ ?? path.join(os.tmpdir(), "assay-demo");
+    const destino = path.join(raiz, "requests.http");
     fs.mkdirSync(path.dirname(destino), { recursive: true });
     fs.writeFileSync(destino, plantilla.replace("PUERTO", String(puerto)), "utf8");
 
