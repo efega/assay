@@ -64,7 +64,7 @@ Los modulos de `src/` no importan `vscode` salvo `extension.ts` y
 de una ventana real.
 
 ```bash
-ROOST_DEMO_PERFIL=/tmp/perfil npx vscode-test --config .vscode-test-demo.mjs
+ASSAY_DEMO_PERFIL=/tmp/perfil npx vscode-test --config .vscode-test-demo.mjs
 ```
 
 `test/demo/demo.test.ts` abre un `.http`, levanta un servidor local con datos

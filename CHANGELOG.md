@@ -61,7 +61,7 @@ First public release.
 - **Request chaining.** `{{login.response.body.$.token}}` runs the dependency
   on its own if it hasn't run yet, with cycle detection and a depth limit.
 - **Environments.** `http-client.env.json` plus a private file for secrets that
-  stays out of git. Roost warns if that file is not in `.gitignore`.
+  stays out of git. Assay warns if that file is not in `.gitignore`.
 - **Secret redaction.** Credential-looking query parameters and headers,
   `set-cookie` included, are masked in the response panel and the log. Values
   from the private environment file are masked anywhere they appear, because

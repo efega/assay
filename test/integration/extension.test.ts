@@ -26,9 +26,9 @@ async function abrirEjemplo(): Promise<vscode.TextDocument> {
   return documento;
 }
 
-suite("Roost", () => {
+suite("Assay", () => {
   test("la extension se activa", async () => {
-    const ext = vscode.extensions.getExtension("efega.roost");
+    const ext = vscode.extensions.getExtension("efega.assay");
     assert.ok(ext, "no se encuentra la extension en el host");
     await ext.activate();
     assert.equal(ext.isActive, true);
@@ -36,18 +36,18 @@ suite("Roost", () => {
 
   test("registra sus comandos", async () => {
     const comandos = await vscode.commands.getCommands(true);
-    assert.ok(comandos.includes("roost.enviar"), "falta roost.enviar");
+    assert.ok(comandos.includes("assay.enviar"), "falta assay.enviar");
     assert.ok(
-      comandos.includes("roost.enviarBajoCursor"),
-      "falta roost.enviarBajoCursor",
+      comandos.includes("assay.enviarBajoCursor"),
+      "falta assay.enviarBajoCursor",
     );
     assert.ok(
-      comandos.includes("roost.limpiarCadena"),
-      "falta roost.limpiarCadena",
+      comandos.includes("assay.limpiarCadena"),
+      "falta assay.limpiarCadena",
     );
     assert.ok(
-      comandos.includes("roost.seleccionarEntorno"),
-      "falta roost.seleccionarEntorno",
+      comandos.includes("assay.seleccionarEntorno"),
+      "falta assay.seleccionarEntorno",
     );
   });
 
@@ -78,7 +78,7 @@ suite("Roost", () => {
     );
 
     for (const lente of envio) {
-      assert.equal(lente.command?.command, "roost.enviar");
+      assert.equal(lente.command?.command, "assay.enviar");
       const texto = documento.lineAt(lente.range.start.line).text;
       assert.match(
         texto,
@@ -152,7 +152,7 @@ suite("Roost", () => {
     // Los ficheros se crean aqui a proposito. El de secretos esta en
     // .gitignore -como debe-, asi que un test que dependiera del de samples/
     // fallaria en cualquier clon recien hecho del repositorio.
-    const dir = path.join(os.tmpdir(), `roost-env-${Date.now()}`);
+    const dir = path.join(os.tmpdir(), `assay-env-${Date.now()}`);
     await vscode.workspace.fs.createDirectory(vscode.Uri.file(dir));
     const escribir = (nombre: string, datos: unknown) =>
       vscode.workspace.fs.writeFile(

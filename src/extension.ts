@@ -40,7 +40,7 @@ const PLANTILLA = [
   "# @name repo",
   "GET {{base}}/repos/microsoft/vscode",
   "",
-  "### Roost sends the one above first, on its own.",
+  "### Assay sends the one above first, on its own.",
   "GET {{base}}/repos/microsoft/vscode/contributors",
   "X-Repo-Id: {{repo.response.body.$.id}}",
   "",
@@ -55,7 +55,7 @@ interface Ajustes {
 
 /** Se lee en cada envio: cambiar el ajuste surte efecto sin recargar. */
 function ajustes(): Ajustes {
-  const c = vscode.workspace.getConfiguration("roost");
+  const c = vscode.workspace.getConfiguration("assay");
   return {
     timeoutMs: c.get<number>("timeoutMs", 30_000),
     redactar: c.get<boolean>("redactSecrets", true),
@@ -88,7 +88,7 @@ function almacenDe(uri: vscode.Uri): Almacen {
 }
 
 export function activate(contexto: vscode.ExtensionContext): void {
-  const salida = vscode.window.createOutputChannel("Roost", "http");
+  const salida = vscode.window.createOutputChannel("Assay", "http");
   contexto.subscriptions.push(salida);
 
   const entornos = new GestorDeEntornos(contexto, salida);
@@ -111,7 +111,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.seleccionarEntorno", () =>
+    vscode.commands.registerCommand("assay.seleccionarEntorno", () =>
       entornos.seleccionar()),
   );
 
@@ -136,14 +136,14 @@ export function activate(contexto: vscode.ExtensionContext): void {
 
   contexto.subscriptions.push(
     vscode.commands.registerCommand(
-      "roost.enviar",
+      "assay.enviar",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
         enviar(peticion, fichero, uri, salida, entornos, respuestas, diagnosticos),
     ),
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.enviarBajoCursor", () => {
+    vscode.commands.registerCommand("assay.enviarBajoCursor", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       const fichero = parse(editor.document.getText());
@@ -160,7 +160,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.nuevoFichero", async () => {
+    vscode.commands.registerCommand("assay.nuevoFichero", async () => {
       // Un fichero de arranque con las tres cosas que hay que entender:
       // una peticion, un aserto y una cadena. Sin guardar todavia: el usuario
       // decide donde vive.
@@ -173,12 +173,12 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.limpiarCadena", () => {
+    vscode.commands.registerCommand("assay.limpiarCadena", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       almacenes.get(editor.document.uri.toString())?.limpiar();
       salida.appendLine("Chained responses cleared.");
-      void vscode.window.showInformationMessage("Roost: chain reset.");
+      void vscode.window.showInformationMessage("Assay: chain reset.");
     }),
   );
 }
@@ -187,7 +187,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
  * Ademas del boton, anota lo que la peticion va a hacer: cuantos asertos se
  * comprobaran y que dependencias se lanzaran antes.
  *
- * No es decoracion. Las dos funciones que diferencian a Roost -asertos y
+ * No es decoracion. Las dos funciones que diferencian a Assay -asertos y
  * cadena- son invisibles en un fichero de texto; anunciarlas donde el usuario
  * ya esta mirando es lo que convierte "otro cliente HTTP" en "ah, esto hace
  * tests".
@@ -209,7 +209,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       lentes.push(new vscode.CodeLens(rango, {
         title: "$(play) Send",
         tooltip: `${peticion.metodo} ${peticion.url}`,
-        command: "roost.enviar",
+        command: "assay.enviar",
         arguments: [peticion, fichero, documento.uri],
       }));
 
@@ -218,7 +218,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(beaker) ${n} ${n === 1 ? "assertion" : "assertions"}`,
           tooltip: peticion.asertos.map((a) => a.origen).join(SALTO),
-          command: "roost.enviar",
+          command: "assay.enviar",
           arguments: [peticion, fichero, documento.uri],
         }));
       }
@@ -229,8 +229,8 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       if (dependencias.length > 0) {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(link) runs ${dependencias.join(", ")} first`,
-          tooltip: "Roost sends these automatically if they have not run yet",
-          command: "roost.enviar",
+          tooltip: "Assay sends these automatically if they have not run yet",
+          command: "assay.enviar",
           arguments: [peticion, fichero, documento.uri],
         }));
       }

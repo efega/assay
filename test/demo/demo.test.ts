@@ -13,7 +13,7 @@ import * as path from "node:path";
 import type { AddressInfo } from "node:net";
 import * as vscode from "vscode";
 
-const ESPERA_MS = Number(process.env.ROOST_DEMO_ESPERA ?? 25000);
+const ESPERA_MS = Number(process.env.ASSAY_DEMO_ESPERA ?? 25000);
 
 suite("demo", () => {
   test("deja la ventana lista para la captura", async function () {
@@ -39,7 +39,7 @@ suite("demo", () => {
 
     const plantilla = fs.readFileSync(
       path.join(__dirname, "..", "..", "..", "scripts", "demo", "demo.http"), "utf8");
-    const destino = path.join(os.tmpdir(), "roost-demo", "requests.http");
+    const destino = path.join(os.tmpdir(), "assay-demo", "requests.http");
     fs.mkdirSync(path.dirname(destino), { recursive: true });
     fs.writeFileSync(destino, plantilla.replace("PUERTO", String(puerto)), "utf8");
 
@@ -48,7 +48,7 @@ suite("demo", () => {
 
     // La activacion es onLanguage:http y tarda un poco: sin esperar, el
     // proveedor de CodeLens todavia no esta registrado.
-    await vscode.extensions.getExtension("efega.roost")?.activate();
+    await vscode.extensions.getExtension("efega.assay")?.activate();
 
     let lentes: vscode.CodeLens[] = [];
     const limite = Date.now() + 15000;

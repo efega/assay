@@ -2,14 +2,14 @@
 
 <img src="icon.png" width="88" alt="">
 
-# Roost
+# Assay
 
 **An HTTP client for VS Code that tests your API.**
 
 Plain `.http` files. No account, no cloud, nothing paywalled later.
 
-[![Install](https://img.shields.io/badge/install-from%20Marketplace-0f6b63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
-[![Version](https://badgen.net/vs-marketplace/v/efega.roost?color=0f6b63&labelColor=3a3a3a)](https://marketplace.visualstudio.com/items?itemName=efega.roost)
+[![Install](https://img.shields.io/badge/install-from%20Marketplace-0f6b63?style=flat-square&logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=efega.assay)
+[![Version](https://badgen.net/vs-marketplace/v/efega.assay?color=0f6b63&labelColor=3a3a3a)](https://marketplace.visualstudio.com/items?itemName=efega.assay)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.85+-0f6b63?style=flat-square)](https://code.visualstudio.com/)
 [![License](https://img.shields.io/badge/license-MIT-0f6b63?style=flat-square)](LICENSE)
 
@@ -17,7 +17,7 @@ Plain `.http` files. No account, no cloud, nothing paywalled later.
 
 <br>
 
-![Roost running a chained request with assertions](media/hero.png)
+![Assay running a chained request with assertions](media/hero.png)
 
 <br>
 
@@ -50,7 +50,7 @@ Authorization: Bearer {{login.response.body.$.token}}
 # @assert body.$.roles.length > 0
 ```
 
-Roost tells you what a request will do before you send it: how many assertions
+Assay tells you what a request will do before you send it: how many assertions
 will run, and which requests it will fire first.
 
 <br>
@@ -62,7 +62,7 @@ will run, and which requests it will fire first.
 | **Assertions built in** | Status, timing, headers and JSON paths. Declarative: no scripting sandbox, and the diff reads clean in code review. |
 | **Request chaining** | Use one response in the next request. Dependencies run on their own, with cycle detection and a depth limit. |
 | **Failures where you are looking** | A failed assertion is underlined on its own line with the value that came back, and lands in the Problems panel. You never leave your request file. |
-| **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git, and Roost tells you if it isn't ignored yet. |
+| **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git, and Assay tells you if it isn't ignored yet. |
 | **Nothing is paywalled retroactively** | Your saved requests are yours. Export is always free. That is a promise, not a tier. |
 
 ## Reads like code, not like a text file
@@ -103,10 +103,15 @@ and one you forget you are using.
 
 ## Works with the files you already have
 
-Roost reads the same `.http` syntax as REST Client: `###` separators,
+Assay reads the same `.http` syntax as REST Client: `###` separators,
 `@variables`, `# @name`, `{{substitution}}` and
 `{{name.response.body.$.path}}` chaining. Point it at your existing files and
 they work.
+
+The format outlives any one tool. Visual Studio 2022 ships `.http` support of
+its own, and Microsoft's documentation says it was inspired by the REST Client
+extension. Your requests are plain text in your repository, readable by more
+than one editor, and they stay yours if you stop using this one.
 
 <br>
 
@@ -175,11 +180,11 @@ existing files keep behaving exactly as before.
 - Chained responses are dropped as soon as you edit the file, so a stale token
   never travels silently.
 
-**What redaction cannot do.** Roost masks what it knows is secret: credential
+**What redaction cannot do.** Assay masks what it knows is secret: credential
 looking parameters and headers, and the exact values from your private
 environment file. It cannot guess that an arbitrary string in a response body
 is sensitive, because doing so would corrupt real data. Turn redaction off with
-`roost.redactSecrets` when you need the raw response.
+`assay.redactSecrets` when you need the raw response.
 
 <br>
 
@@ -187,15 +192,15 @@ is sensitive, because doing so would corrupt real data. Turn redaction off with
 
 | Command |   |
 | --- | --- |
-| `Roost: Send request` | `Ctrl+Alt+R` · `Cmd+Alt+R` on macOS |
-| `Roost: Select environment` | Also on the status bar |
-| `Roost: New request file` | Starter file with the three ideas |
-| `Roost: Reset chain` | Discards saved responses |
+| `Assay: Send request` | `Ctrl+Alt+R` · `Cmd+Alt+R` on macOS |
+| `Assay: Select environment` | Also on the status bar |
+| `Assay: New request file` | Starter file with the three ideas |
+| `Assay: Reset chain` | Discards saved responses |
 
 | Setting | Default |   |
 | --- | --- | --- |
-| `roost.timeoutMs` | `30000` | How long to wait for a response |
-| `roost.redactSecrets` | `true` | Mask credential-looking values |
+| `assay.timeoutMs` | `30000` | How long to wait for a response |
+| `assay.redactSecrets` | `true` | Mask credential-looking values |
 
 <br>
 
@@ -210,7 +215,7 @@ redaction.
 **Not yet:** server-sent events, GraphQL helpers, a cookie jar, and a CLI
 runner so a `.http` file can run in CI.
 
-Missing something? [Open an issue](https://github.com/efega/roost/issues). The
+Missing something? [Open an issue](https://github.com/efega/assay/issues). The
 roadmap is driven by what people actually ask for.
 
 <div align="center">

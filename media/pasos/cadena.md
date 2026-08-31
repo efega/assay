@@ -3,7 +3,7 @@
 # @name login
 POST {{base}}/auth
 
-### Roost sends login first, on its own
+### Assay sends login first, on its own
 GET {{base}}/me
 Authorization: Bearer {{login.response.body.$.token}}
 ```

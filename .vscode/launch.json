@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Roost: ejecutar extension",
+      "name": "Assay: ejecutar extension",
       "type": "extensionHost",
       "request": "launch",
       "args": [

@@ -13,7 +13,7 @@ import {
   estaIgnorado, nombresDe, parsearEntornos, variablesDe,
 } from "./entornos";
 
-const CLAVE_SELECCION = "roost.entorno";
+const CLAVE_SELECCION = "assay.entorno";
 const MAX_NIVELES = 6;
 
 interface Cargados {
@@ -68,8 +68,8 @@ export class GestorDeEntornos {
     this.seleccion = contexto.workspaceState.get<string>(CLAVE_SELECCION);
     this.barra = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right, 100);
-    this.barra.command = "roost.seleccionarEntorno";
-    this.barra.tooltip = "Roost: active environment";
+    this.barra.command = "assay.seleccionarEntorno";
+    this.barra.tooltip = "Assay: active environment";
     contexto.subscriptions.push(this.barra);
     this.refrescarBarra();
   }
@@ -139,7 +139,7 @@ export class GestorDeEntornos {
       ...nombres.map((n) => (n === this.seleccion ? `$(check) ${n}` : `$(globe) ${n}`)),
     ];
     const elegido = await vscode.window.showQuickPick(opciones, {
-      title: "Roost: active environment",
+      title: "Assay: active environment",
       placeHolder: "Variables in the .http file still take precedence",
     });
     if (elegido === undefined) return;

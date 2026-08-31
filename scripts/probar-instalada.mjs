@@ -12,9 +12,9 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const raiz = fileURLToPath(new URL("..", import.meta.url));
-const perfil = mkdtempSync(join(tmpdir(), "roost-perfil-"));
+const perfil = mkdtempSync(join(tmpdir(), "assay-perfil-"));
 const extDir = join(perfil, "ext");
-const vsix = join(perfil, "roost.vsix");
+const vsix = join(perfil, "assay.vsix");
 const code = join(raiz, ".vscode-test", "vscode-win32-x64-archive-1.135.0", "bin", "code.cmd");
 const node = join(raiz, ".node", "node-v22.14.0-win-x64", "node.exe");
 
@@ -46,7 +46,7 @@ try {
   try {
     salida = execFileSync("npx", ["vscode-test", "--config", ".vscode-test-instalada.mjs"], {
       cwd: raiz, shell: true, encoding: "utf8",
-      env: { ...process.env, ROOST_EXT_DIR: extDir },
+      env: { ...process.env, ASSAY_EXT_DIR: extDir },
     });
   } catch (error) {
     salida = `${error.stdout ?? ""}${error.stderr ?? ""}`;

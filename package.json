@@ -1,8 +1,8 @@
 {
-  "name": "roost",
-  "displayName": "Roost - HTTP client with tests",
-  "description": "Run .http files, assert on the response, chain requests. No account, no cloud, nothing paywalled later.",
-  "version": "0.2.0",
+  "name": "assay",
+  "displayName": "Assay - HTTP client with tests",
+  "description": "No account, no cloud, nothing paywalled later. Run .http files, assert on the response, and chain requests without leaving your editor.",
+  "version": "0.3.0",
   "publisher": "efega",
   "private": true,
   "license": "MIT",
@@ -34,8 +34,8 @@
     "insomnia",
     "thunder client",
     "bruno",
-    "graphql",
-    "openapi"
+    "http tests",
+    "request chaining"
   ],
   "main": "./out/src/extension.js",
   "activationEvents": [
@@ -58,44 +58,44 @@
     ],
     "commands": [
       {
-        "command": "roost.enviarBajoCursor",
+        "command": "assay.enviarBajoCursor",
         "title": "Send request",
-        "category": "Roost"
+        "category": "Assay"
       },
       {
-        "command": "roost.limpiarCadena",
+        "command": "assay.limpiarCadena",
         "title": "Reset chain",
-        "category": "Roost"
+        "category": "Assay"
       },
       {
-        "command": "roost.seleccionarEntorno",
+        "command": "assay.seleccionarEntorno",
         "title": "Select environment",
-        "category": "Roost"
+        "category": "Assay"
       },
       {
-        "command": "roost.nuevoFichero",
+        "command": "assay.nuevoFichero",
         "title": "New request file",
-        "category": "Roost"
+        "category": "Assay"
       }
     ],
     "keybindings": [
       {
-        "command": "roost.enviarBajoCursor",
+        "command": "assay.enviarBajoCursor",
         "key": "ctrl+alt+r",
         "mac": "cmd+alt+r",
         "when": "editorTextFocus && editorLangId == http"
       }
     ],
     "configuration": {
-      "title": "Roost",
+      "title": "Assay",
       "properties": {
-        "roost.timeoutMs": {
+        "assay.timeoutMs": {
           "type": "number",
           "default": 30000,
           "minimum": 1000,
           "description": "How long to wait for a response, in milliseconds."
         },
-        "roost.redactSecrets": {
+        "assay.redactSecrets": {
           "type": "boolean",
           "default": true,
           "description": "Mask credential-looking query parameters and headers in the response panel and log."
@@ -104,20 +104,20 @@
     },
     "walkthroughs": [
       {
-        "id": "roost.empezar",
-        "title": "Get started with Roost",
+        "id": "assay.empezar",
+        "title": "Get started with Assay",
         "description": "Send a request, turn it into a test, and keep your secrets out of git.",
         "steps": [
           {
             "id": "primera",
             "title": "Send your first request",
-            "description": "Create a `.http` file and press **Send** above any request line, or `Ctrl+Alt+R`.\n\nOne line is enough: `GET https://api.github.com/zen`\n\n[Create a request file](command:roost.nuevoFichero)",
+            "description": "Create a `.http` file and press **Send** above any request line, or `Ctrl+Alt+R`.\n\nOne line is enough: `GET https://api.github.com/zen`\n\n[Create a request file](command:assay.nuevoFichero)",
             "media": {
               "markdown": "media/pasos/enviar.md",
               "altText": "Sending a request"
             },
             "completionEvents": [
-              "onCommand:roost.enviar"
+              "onCommand:assay.enviar"
             ]
           },
           {
@@ -132,7 +132,7 @@
           {
             "id": "cadena",
             "title": "Chain requests",
-            "description": "Name a request and use its response in the next one. Roost runs the dependency on its own if it hasn't run yet.\n\n```\n### Log in\n# @name login\nPOST {{base}}/auth\n\n### Use it\nGET {{base}}/me\nAuthorization: Bearer {{login.response.body.$.token}}\n```",
+            "description": "Name a request and use its response in the next one. Assay runs the dependency on its own if it hasn't run yet.\n\n```\n### Log in\n# @name login\nPOST {{base}}/auth\n\n### Use it\nGET {{base}}/me\nAuthorization: Bearer {{login.response.body.$.token}}\n```",
             "media": {
               "markdown": "media/pasos/cadena.md",
               "altText": "Chaining"
@@ -141,13 +141,13 @@
           {
             "id": "entornos",
             "title": "Keep secrets out of git",
-            "description": "Environments live in `http-client.env.json`, which you commit. Secrets go in `http-client.private.env.json`, which you do not.\n\nRoost warns you if that file is missing from `.gitignore`.\n\n[Pick an environment](command:roost.seleccionarEntorno)",
+            "description": "Environments live in `http-client.env.json`, which you commit. Secrets go in `http-client.private.env.json`, which you do not.\n\nAssay warns you if that file is missing from `.gitignore`.\n\n[Pick an environment](command:assay.seleccionarEntorno)",
             "media": {
               "markdown": "media/pasos/entornos.md",
               "altText": "Environments"
             },
             "completionEvents": [
-              "onCommand:roost.seleccionarEntorno"
+              "onCommand:assay.seleccionarEntorno"
             ]
           }
         ]
@@ -189,10 +189,10 @@
   "icon": "icon.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/efega/roost.git"
+    "url": "https://github.com/efega/assay.git"
   },
   "bugs": {
-    "url": "https://github.com/efega/roost/issues"
+    "url": "https://github.com/efega/assay/issues"
   },
-  "homepage": "https://github.com/efega/roost#readme"
+  "homepage": "https://github.com/efega/assay#readme"
 }
