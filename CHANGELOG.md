@@ -13,6 +13,14 @@
   every user who has to find it again.
 - Command ids, settings and the response scheme changed with the name
   (`assay.*`). Reinstall rather than upgrade in place if anything looks stale.
+- **Command ids are now English**: `assay.send`, `assay.sendUnderCursor`,
+  `assay.resetChain`, `assay.selectEnvironment`, `assay.newRequestFile`. The
+  titles were already English and the ids were not, which is the worst of both.
+  They show up in `keybindings.json` and in the shortcut editor.
+- Assertion targets are English only. Undocumented Spanish aliases were
+  accepted (`estado`, `tiempo`, `cabecera.`, `cuerpo.`) and are gone. Nothing
+  in the docs, samples or tests used them.
+- The bundled sample is `samples/example.http` and reads in English.
 - The description now leads with the promise instead of ending on it, and the
   `graphql` and `openapi` keywords are gone: they advertised capabilities the
   extension does not have.

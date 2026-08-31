@@ -107,5 +107,22 @@ un build a medias y fallan de forma aparentemente aleatoria. Paso una vez.
 
 Las cadenas que ve el usuario estan en **ingles**: el mercado son 7,5 millones
 de desarrolladores anglofonos. Los comentarios y los nombres internos estan en
-espanyol, y no los ve nadie de fuera.
+espanyol.
+
+"Ingles" incluye mas de lo que parece, y por eso hay tests que lo vigilan:
+
+| | |
+|---|---|
+| Cadenas de la interfaz | ingles |
+| Sintaxis que escribe el usuario (`# @assert status`) | ingles, y **solo** ingles: hubo alias en castellano que no documentaba nadie |
+| Ids de comando y de ajuste | ingles: salen en `keybindings.json` y en la pantalla de atajos |
+| Ficheros que se empaquetan (`samples/`, `media/steps/`) | ingles, nombre de fichero incluido |
+| Scopes de TextMate | ingles |
+| Comentarios, identificadores, claves internas de la gramatica | castellano |
+
+`removeComments` esta activado, asi que los comentarios en castellano **no
+viajan dentro del `.vsix`**. Sin esa opcion viajaban todos, y esta seccion
+afirmaba lo contrario.
+
+Y nada de rayas largas en texto publicado.
 
