@@ -65,6 +65,46 @@ will run, and which requests it will fire first.
 | **Environments** | Standard `http-client.env.json`. Secrets live in a separate file that stays out of git, and Assay tells you if it isn't ignored yet. |
 | **Nothing is paywalled retroactively** | Your saved requests are yours. Export is always free. That is a promise, not a tier. |
 
+## How it compares
+
+Honest version, because you will find these anyway.
+
+|   | Assay | REST Client | httpyac | Thunder Client |
+| --- | --- | --- | --- | --- |
+| Assertions live in the `.http` file | yes | no | yes, richer | no, in a panel |
+| Other `.http` tools still read the file | **yes** | n/a | no | n/a |
+| Chained requests run on their own | yes | no | yes | yes |
+| CLI for CI | **no** | no | yes | paid plan |
+| XPath, JS expressions, hashes | **no** | no | yes | scripting is paid |
+| Free tier limits | none | none | none | 3 collections, 15 requests each, 0 environments |
+| Last release | this week | 4 years ago | 1.4 years ago | active |
+
+**[httpyac](https://httpyac.github.io/) is the closest thing to this**, it is
+good, and its assertions do strictly more than these: XPath, JavaScript
+expressions, hash checks, fifteen operators against ten. If you need any of
+that, or you need to run your tests in CI today, use httpyac. That is a real
+recommendation, not a hedge.
+
+One thing here works differently, and it is the reason this exists:
+
+```http
+# @assert status 200      <- a comment. Every .http tool ignores it.
+?? status == 200          <- httpyac syntax. Only httpyac understands it.
+```
+
+`#` is a comment prefix in the `.http` format, honoured by REST Client,
+JetBrains, Visual Studio 2022 and Neovim alike. So assertions written for Assay
+are invisible to every other client: you can add a test layer to a `.http` file
+your team already shares, and nobody who does not use Assay notices anything
+changed. Nothing to migrate, nothing to agree on first.
+
+That is the whole trade. Fewer features, in exchange for not asking anyone else
+to move.
+
+<sub>Release dates and tier limits checked 2026-08-31. If something here is out
+of date or wrong, [open an issue](https://github.com/efega/assay/issues) and it
+gets fixed.</sub>
+
 ## Reads like code, not like a text file
 
 `.http` files get proper syntax highlighting: methods, URLs, headers,
