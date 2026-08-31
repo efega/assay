@@ -10,6 +10,7 @@
 import * as vscode from "vscode";
 import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
 import { ejecutar, redactarUrl, HttpError } from "./http";
+import { Tarro } from "./cookies";
 import { evaluarTodos, resumir } from "./asserts";
 import { ESQUEMA, ProveedorDeRespuestas } from "./respuesta";
 import { Diagnosticos } from "./diagnosticos";
@@ -77,6 +78,13 @@ const LENGUAJES = [
  */
 const almacenes = new Map<string, Almacen>();
 
+/**
+ * La sesion vive donde las respuestas y muere con ellas. Si se editara el
+ * login y se conservara la cookie, la peticion siguiente iria autenticada con
+ * una sesion que ya no corresponde a lo que pone en el fichero.
+ */
+const tarros = new Map<string, Tarro>();
+
 function almacenDe(uri: vscode.Uri): Almacen {
   const clave = uri.toString();
   let almacen = almacenes.get(clave);
@@ -85,6 +93,16 @@ function almacenDe(uri: vscode.Uri): Almacen {
     almacenes.set(clave, almacen);
   }
   return almacen;
+}
+
+function tarroDe(uri: vscode.Uri): Tarro {
+  const clave = uri.toString();
+  let tarro = tarros.get(clave);
+  if (!tarro) {
+    tarro = new Tarro();
+    tarros.set(clave, tarro);
+  }
+  return tarro;
 }
 
 export function activate(contexto: vscode.ExtensionContext): void {
@@ -123,6 +141,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.workspace.onDidChangeTextDocument((evento) => {
       if (evento.document.languageId === "http") {
         almacenes.get(evento.document.uri.toString())?.limpiar();
+        tarros.get(evento.document.uri.toString())?.limpiar();
         // Al editar, los avisos de asertos dejan de corresponder a lo que hay.
         diagnosticos.limpiar(evento.document.uri);
       }
@@ -131,6 +150,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   contexto.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument((documento) => {
       almacenes.delete(documento.uri.toString());
+      tarros.delete(documento.uri.toString());
     }),
   );
 
@@ -177,7 +197,8 @@ export function activate(contexto: vscode.ExtensionContext): void {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       almacenes.get(editor.document.uri.toString())?.limpiar();
-      salida.appendLine("Chained responses cleared.");
+      tarros.get(editor.document.uri.toString())?.limpiar();
+      salida.appendLine("Chained responses and session cookies cleared.");
       void vscode.window.showInformationMessage("Assay: chain reset.");
     }),
   );
@@ -250,6 +271,7 @@ async function enviar(
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
+  const tarro = uri ? tarroDe(uri) : new Tarro();
   const { timeoutMs, redactar } = ajustes();
   const oculta = (url: string) => (redactar ? redactarUrl(url) : url);
 
@@ -269,14 +291,15 @@ async function enviar(
         // Las dependencias primero. Se registran los nombres, nunca los valores:
         // un token en el panel acaba en una captura o en un fichero commiteado.
         const { ejecutadas } = await resolverDependencias(
-          peticion, fichero, almacen, (p) => ejecutar(p, { timeoutMs }), conVariables,
+          peticion, fichero, almacen,
+          (p) => ejecutar(p, { timeoutMs, tarro }), conVariables,
         );
         if (ejecutadas.length > 0) {
           salida.appendLine(`  cadena: ${ejecutadas.join(" -> ")}`);
         }
 
         const resuelta = aplicar(conVariables(peticion), almacen);
-        const respuesta = await ejecutar(resuelta, { timeoutMs });
+        const respuesta = await ejecutar(resuelta, { timeoutMs, tarro });
 
         if (peticion.nombre) almacen.guardar(peticion.nombre, respuesta);
 
@@ -294,7 +317,11 @@ async function enviar(
 
         // Un servidor puede devolverte el secreto que le mandaste: httpbin lo
         // hace, y muchos endpoints de depuracion tambien.
-        const secretos = redactar && uri ? await entornos.secretosPara(uri) : [];
+        // Los valores de cookie entran aqui: una cookie de sesion es tan
+        // sensible como un token, y el panel se puede guardar o capturar.
+        const secretos = redactar
+          ? [...(uri ? await entornos.secretosPara(uri) : []), ...tarro.valores()]
+          : [];
 
         const destino = respuestas.publicar(resuelta, respuesta, resultados,
                                             { redactar, secretos });
@@ -333,4 +360,5 @@ function acortar(url: string, max = 60): string {
 
 export function deactivate(): void {
   almacenes.clear();
+  tarros.clear();
 }

@@ -167,6 +167,30 @@ existing files keep behaving exactly as before.
 
 <br>
 
+## Sessions
+
+APIs that authenticate with a cookie instead of a bearer token work without
+writing anything extra. Log in once and the session carries:
+
+```http
+### Log in, responds with Set-Cookie
+# @name login
+POST {{base}}/auth
+
+### Already authenticated
+GET {{base}}/me
+```
+
+The session belongs to the file and is cleared when you edit it, when you
+close it, or with **Reset chain**. A `Cookie:` header you write yourself always
+wins over the stored session.
+
+Requests follow redirects, so a cookie set on an intermediate `302` is not
+visible. Form logins that redirect are affected; JSON APIs, which answer `200`
+with `Set-Cookie`, are not.
+
+<br>
+
 ## Your credentials stay on your machine
 
 - No account, ever. Nothing to sign up for.

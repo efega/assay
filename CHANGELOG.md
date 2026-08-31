@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.3.0] - 2026-08-31
+
+### Changed
+
+- **Renamed from Roost to Assay.** `ROOST` is a live registered US trademark
+  (serial 90556518, Zettabytes Inc., registered 2022-08-16) in Nice class 042,
+  which covers software for application development and deployment. That is
+  this category. The name also collided inside the Marketplace itself: a search
+  for "roost" returned this extension fourth, behind an unrelated tool with
+  797 times the installs. Renaming now costs an afternoon; renaming later costs
+  every user who has to find it again.
+- Command ids, settings and the response scheme changed with the name
+  (`assay.*`). Reinstall rather than upgrade in place if anything looks stale.
+- The description now leads with the promise instead of ending on it, and the
+  `graphql` and `openapi` keywords are gone: they advertised capabilities the
+  extension does not have.
+
+### Added
+
+- **Cookie sessions.** APIs that authenticate with a session cookie instead of
+  a bearer token now work with nothing extra written in the file. Log in once
+  and the session carries to the rest of the chain. The jar lives and dies with
+  the document, exactly like stored responses, and a `Cookie:` header you write
+  yourself always wins.
+- A server cannot set a cookie for a domain that is not its own, and a `Secure`
+  cookie never travels over plain http.
+- Cookie values are masked in the response panel, like any other secret.
+
+### Known limitation
+
+- Requests follow redirects, so a cookie set on an intermediate `302` is not
+  captured. This affects web form logins, not JSON APIs.
+
 ## [0.2.0] - 2026-08-30
 
 ### Added
