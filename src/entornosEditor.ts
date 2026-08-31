@@ -13,7 +13,7 @@ import {
   estaIgnorado, nombresDe, parsearEntornos, variablesDe,
 } from "./entornos";
 
-const CLAVE_SELECCION = "assay.entorno";
+const CLAVE_SELECCION = "assay.environment";
 const MAX_NIVELES = 6;
 
 interface Cargados {
@@ -68,7 +68,7 @@ export class GestorDeEntornos {
     this.seleccion = contexto.workspaceState.get<string>(CLAVE_SELECCION);
     this.barra = vscode.window.createStatusBarItem(
       vscode.StatusBarAlignment.Right, 100);
-    this.barra.command = "assay.seleccionarEntorno";
+    this.barra.command = "assay.selectEnvironment";
     this.barra.tooltip = "Assay: active environment";
     contexto.subscriptions.push(this.barra);
     this.refrescarBarra();

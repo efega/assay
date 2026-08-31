@@ -58,29 +58,29 @@
     ],
     "commands": [
       {
-        "command": "assay.enviarBajoCursor",
+        "command": "assay.sendUnderCursor",
         "title": "Send request",
         "category": "Assay"
       },
       {
-        "command": "assay.limpiarCadena",
+        "command": "assay.resetChain",
         "title": "Reset chain",
         "category": "Assay"
       },
       {
-        "command": "assay.seleccionarEntorno",
+        "command": "assay.selectEnvironment",
         "title": "Select environment",
         "category": "Assay"
       },
       {
-        "command": "assay.nuevoFichero",
+        "command": "assay.newRequestFile",
         "title": "New request file",
         "category": "Assay"
       }
     ],
     "keybindings": [
       {
-        "command": "assay.enviarBajoCursor",
+        "command": "assay.sendUnderCursor",
         "key": "ctrl+alt+r",
         "mac": "cmd+alt+r",
         "when": "editorTextFocus && editorLangId == http"
@@ -104,50 +104,50 @@
     },
     "walkthroughs": [
       {
-        "id": "assay.empezar",
+        "id": "assay.getStarted",
         "title": "Get started with Assay",
         "description": "Send a request, turn it into a test, and keep your secrets out of git.",
         "steps": [
           {
-            "id": "primera",
+            "id": "send",
             "title": "Send your first request",
-            "description": "Create a `.http` file and press **Send** above any request line, or `Ctrl+Alt+R`.\n\nOne line is enough: `GET https://api.github.com/zen`\n\n[Create a request file](command:assay.nuevoFichero)",
+            "description": "Create a `.http` file and press **Send** above any request line, or `Ctrl+Alt+R`.\n\nOne line is enough: `GET https://api.github.com/zen`\n\n[Create a request file](command:assay.newRequestFile)",
             "media": {
-              "markdown": "media/pasos/enviar.md",
+              "markdown": "media/steps/send.md",
               "altText": "Sending a request"
             },
             "completionEvents": [
-              "onCommand:assay.enviar"
+              "onCommand:assay.send"
             ]
           },
           {
-            "id": "asertos",
+            "id": "assertions",
             "title": "Turn it into a test",
             "description": "Add assertions as comments. They run on every send and the result lands at the top of the response.\n\n```\n# @assert status 200\n# @assert time < 500\n# @assert body.$.items.length > 0\n```\n\nNo scripting sandbox, and the diff reads clean in code review.",
             "media": {
-              "markdown": "media/pasos/asertos.md",
+              "markdown": "media/steps/assertions.md",
               "altText": "Assertions"
             }
           },
           {
-            "id": "cadena",
+            "id": "chaining",
             "title": "Chain requests",
             "description": "Name a request and use its response in the next one. Assay runs the dependency on its own if it hasn't run yet.\n\n```\n### Log in\n# @name login\nPOST {{base}}/auth\n\n### Use it\nGET {{base}}/me\nAuthorization: Bearer {{login.response.body.$.token}}\n```",
             "media": {
-              "markdown": "media/pasos/cadena.md",
+              "markdown": "media/steps/chaining.md",
               "altText": "Chaining"
             }
           },
           {
-            "id": "entornos",
+            "id": "environments",
             "title": "Keep secrets out of git",
-            "description": "Environments live in `http-client.env.json`, which you commit. Secrets go in `http-client.private.env.json`, which you do not.\n\nAssay warns you if that file is missing from `.gitignore`.\n\n[Pick an environment](command:assay.seleccionarEntorno)",
+            "description": "Environments live in `http-client.env.json`, which you commit. Secrets go in `http-client.private.env.json`, which you do not.\n\nAssay warns you if that file is missing from `.gitignore`.\n\n[Pick an environment](command:assay.selectEnvironment)",
             "media": {
-              "markdown": "media/pasos/entornos.md",
+              "markdown": "media/steps/environments.md",
               "altText": "Environments"
             },
             "completionEvents": [
-              "onCommand:assay.seleccionarEntorno"
+              "onCommand:assay.selectEnvironment"
             ]
           }
         ]

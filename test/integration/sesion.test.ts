@@ -158,7 +158,7 @@ suite("Assay · sesion por cookie en el editor", () => {
     await new Promise((r) => setTimeout(r, 600));
 
     await vscode.window.showTextDocument(documento);
-    await vscode.commands.executeCommand("assay.limpiarCadena");
+    await vscode.commands.executeCommand("assay.resetChain");
     await new Promise((r) => setTimeout(r, 300));
 
     await enviar(documento, 1);

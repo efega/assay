@@ -73,19 +73,23 @@ export function parseAserto(linea: string, numero = 0): Aserto | null {
 function valorDe(objetivo: string, respuesta: HttpResponse): Resultado {
   const bajo = objetivo.toLowerCase();
 
-  if (bajo === "status" || bajo === "estado") return respuesta.estado;
-  if (bajo === "time" || bajo === "ms" || bajo === "tiempo") return respuesta.ms;
+  // Solo en ingles. Hubo alias en castellano -estado, tiempo, cabecera.,
+  // cuerpo.- que no documentaba nadie y no usaba nada: sintaxis que ve el
+  // usuario en un idioma que no es el del producto, y una rama mas que
+  // mantener por cada objetivo.
+  if (bajo === "status") return respuesta.estado;
+  if (bajo === "time" || bajo === "ms") return respuesta.ms;
   if (bajo === "bytes") return respuesta.bytes;
 
-  if (bajo.startsWith("header.") || bajo.startsWith("cabecera.")) {
+  if (bajo.startsWith("header.")) {
     const nombre = objetivo.slice(objetivo.indexOf(".") + 1).toLowerCase();
     const valor = respuesta.cabeceras[nombre];
     return valor === undefined ? AUSENTE : valor;
   }
 
-  if (bajo === "body" || bajo === "cuerpo") return respuesta.cuerpo;
+  if (bajo === "body") return respuesta.cuerpo;
 
-  if (bajo.startsWith("body.") || bajo.startsWith("cuerpo.")) {
+  if (bajo.startsWith("body.")) {
     const ruta = objetivo.slice(objetivo.indexOf(".") + 1);
     return resolver(comoJson(respuesta.cuerpo), ruta);
   }

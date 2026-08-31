@@ -52,7 +52,7 @@ export class Diagnosticos {
         rango,
         r.motivo
           ? `Assertion failed: ${r.aserto.origen} (${r.motivo})`
-          : `Assertion failed: ${r.aserto.origen} — got ${r.obtenido}`,
+          : `Assertion failed: ${r.aserto.origen}, got ${r.obtenido}`,
         vscode.DiagnosticSeverity.Warning,
       );
       d.source = "Assay";

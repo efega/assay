@@ -78,8 +78,8 @@ suite("Assay instalado desde el .vsix", () => {
     assert.equal(ext.isActive, true, "no llego a activarse");
 
     const comandos = await vscode.commands.getCommands(true);
-    for (const c of ["assay.enviar", "assay.enviarBajoCursor",
-                     "assay.limpiarCadena", "assay.seleccionarEntorno"]) {
+    for (const c of ["assay.send", "assay.sendUnderCursor",
+                     "assay.resetChain", "assay.selectEnvironment"]) {
       assert.ok(comandos.includes(c), `falta ${c}`);
     }
   });

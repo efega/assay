@@ -226,6 +226,6 @@ suite("Assay · envio real", () => {
 
     // Y la extension sigue viva.
     const comandos = await vscode.commands.getCommands(true);
-    assert.ok(comandos.includes("assay.enviar"));
+    assert.ok(comandos.includes("assay.send"));
   });
 });

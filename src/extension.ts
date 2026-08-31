@@ -129,7 +129,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("assay.seleccionarEntorno", () =>
+    vscode.commands.registerCommand("assay.selectEnvironment", () =>
       entornos.seleccionar()),
   );
 
@@ -156,14 +156,14 @@ export function activate(contexto: vscode.ExtensionContext): void {
 
   contexto.subscriptions.push(
     vscode.commands.registerCommand(
-      "assay.enviar",
+      "assay.send",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
         enviar(peticion, fichero, uri, salida, entornos, respuestas, diagnosticos),
     ),
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("assay.enviarBajoCursor", () => {
+    vscode.commands.registerCommand("assay.sendUnderCursor", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       const fichero = parse(editor.document.getText());
@@ -180,7 +180,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("assay.nuevoFichero", async () => {
+    vscode.commands.registerCommand("assay.newRequestFile", async () => {
       // Un fichero de arranque con las tres cosas que hay que entender:
       // una peticion, un aserto y una cadena. Sin guardar todavia: el usuario
       // decide donde vive.
@@ -193,7 +193,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("assay.limpiarCadena", () => {
+    vscode.commands.registerCommand("assay.resetChain", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       almacenes.get(editor.document.uri.toString())?.limpiar();
@@ -230,7 +230,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       lentes.push(new vscode.CodeLens(rango, {
         title: "$(play) Send",
         tooltip: `${peticion.metodo} ${peticion.url}`,
-        command: "assay.enviar",
+        command: "assay.send",
         arguments: [peticion, fichero, documento.uri],
       }));
 
@@ -239,7 +239,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(beaker) ${n} ${n === 1 ? "assertion" : "assertions"}`,
           tooltip: peticion.asertos.map((a) => a.origen).join(SALTO),
-          command: "assay.enviar",
+          command: "assay.send",
           arguments: [peticion, fichero, documento.uri],
         }));
       }
@@ -251,7 +251,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(link) runs ${dependencias.join(", ")} first`,
           tooltip: "Assay sends these automatically if they have not run yet",
-          command: "assay.enviar",
+          command: "assay.send",
           arguments: [peticion, fichero, documento.uri],
         }));
       }

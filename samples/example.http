@@ -1,0 +1,50 @@
+# Example file. Plain text, versioned with git, yours.
+# Press "Send" above any request, or Ctrl+Alt+R with the cursor inside it.
+
+@base = https://httpbin.org
+@token = an-example-token
+
+### A simple query with parameters
+GET {{base}}/get
+  ?role=admin
+  &active=true
+Accept: application/json
+
+### A request with an authorization header
+# @name profile
+GET {{base}}/bearer
+Authorization: Bearer {{token}}
+
+### Sending JSON
+POST {{base}}/post
+Content-Type: application/json
+
+{
+  "name": "Ana",
+  "role": "admin"
+}
+
+### Checking an error code
+GET {{base}}/status/404
+
+### With assertions: the response checks itself
+# @name withAssertions
+# @assert status 200
+# @assert time < 5000
+# @assert header.content-type contains json
+# @assert body.$.headers.Accept exists
+GET {{base}}/get
+Accept: application/json
+
+### Chained: this request produces a value
+# @name source
+POST {{base}}/post
+Content-Type: application/json
+
+{"token": "T0K3N-EXAMPLE", "id": 42}
+
+### And this one consumes it. Send only this one: the other runs on its own.
+GET {{base}}/anything/{{source.response.body.$.json.id}}
+Authorization: Bearer {{source.response.body.$.json.token}}
+# @assert status 200
+# @assert body.$.headers.Authorization contains T0K3N

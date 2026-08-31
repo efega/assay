@@ -13,7 +13,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 
 const RAIZ = path.resolve(__dirname, "..", "..", "..");
-const EJEMPLO = path.join(RAIZ, "samples", "ejemplo.http");
+const EJEMPLO = path.join(RAIZ, "samples", "example.http");
 const METODO = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s/;
 
 /** Solo las lentes de envio: ahora tambien hay de asertos y de cadena. */
@@ -36,18 +36,18 @@ suite("Assay", () => {
 
   test("registra sus comandos", async () => {
     const comandos = await vscode.commands.getCommands(true);
-    assert.ok(comandos.includes("assay.enviar"), "falta assay.enviar");
+    assert.ok(comandos.includes("assay.send"), "falta assay.send");
     assert.ok(
-      comandos.includes("assay.enviarBajoCursor"),
-      "falta assay.enviarBajoCursor",
+      comandos.includes("assay.sendUnderCursor"),
+      "falta assay.sendUnderCursor",
     );
     assert.ok(
-      comandos.includes("assay.limpiarCadena"),
-      "falta assay.limpiarCadena",
+      comandos.includes("assay.resetChain"),
+      "falta assay.resetChain",
     );
     assert.ok(
-      comandos.includes("assay.seleccionarEntorno"),
-      "falta assay.seleccionarEntorno",
+      comandos.includes("assay.selectEnvironment"),
+      "falta assay.selectEnvironment",
     );
   });
 
@@ -78,7 +78,7 @@ suite("Assay", () => {
     );
 
     for (const lente of envio) {
-      assert.equal(lente.command?.command, "assay.enviar");
+      assert.equal(lente.command?.command, "assay.send");
       const texto = documento.lineAt(lente.range.start.line).text;
       assert.match(
         texto,
@@ -140,8 +140,8 @@ suite("Assay", () => {
       .map((l) => (l.command?.arguments?.[0] as { nombre?: string })?.nombre)
       .filter(Boolean);
     assert.ok(
-      nombradas.includes("origen"),
-      `el ejemplo define "# @name origen"; llegaron: ${JSON.stringify(nombradas)}`,
+      nombradas.includes("source"),
+      `el ejemplo define "# @name source"; llegaron: ${JSON.stringify(nombradas)}`,
     );
   });
 
