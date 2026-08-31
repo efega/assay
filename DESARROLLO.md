@@ -42,6 +42,32 @@ en cuanto alguien instala la extension.
 El guion tambien falla si se ejecutan **cero** tests. vscode-test sale con
 codigo 0 cuando no encuentra ninguno, y un verde falso es peor que un fallo.
 
+### Y un cuarto, fuera de `npm test`
+
+```
+npm run humo
+```
+
+`scripts/humo-real.mjs` ejercita el nucleo contra httpbin y postman-echo: TLS
+de verdad, gzip, respuestas de 100 KB, redirecciones, latencia y cookies
+reales. **No esta en `npm test` a proposito**, porque un test que depende de un
+servicio ajeno falla cuando falla el servicio, y un test que falla por causas
+ajenas se acaba ignorando.
+
+Lo que descubre es distinto de lo que descubren los otros tres: los locales
+comprueban que la logica es correcta, este comprueba que sobrevive a internet.
+
+## Integridad del paquete
+
+`test/unit/paquete.test.ts` comprueba la firma de los PNG, byte a byte,
+incluido el `\r`. Existe por un fallo real: un `sed` de renombrado corrio sobre
+todos los ficheros versionados y le quito ese byte al icono y a la captura. Los
+167 tests siguieron en verde porque ninguno miraba binarios, y el `.vsix` se
+genero con el icono roto.
+
+La regla que sale de ahi: **cualquier cosa que se publique tiene que tener un
+test que la mire**, incluidas las que no son codigo.
+
 ## Estructura
 
 | | |

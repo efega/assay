@@ -169,7 +169,8 @@
     "test": "npm run test:unit && npm run test:estres && npm run test:integration && npm run test:instalada",
     "vsce:package": "npm test && npx --yes @vscode/vsce package --no-dependencies",
     "test:instalada": "node scripts/probar-instalada.mjs",
-    "test:estres": "tsc -p . && node --test out/test/estres/limites.test.js"
+    "test:estres": "tsc -p . && node --test out/test/estres/limites.test.js",
+    "humo": "tsc -p . && node scripts/humo-real.mjs"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
