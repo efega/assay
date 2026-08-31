@@ -10,6 +10,7 @@
 import * as vscode from "vscode";
 import { parse, resolver, type HttpFile, type HttpRequest } from "./parser";
 import { ejecutar, redactarUrl, HttpError } from "./http";
+import { Tarro } from "./cookies";
 import { evaluarTodos, resumir } from "./asserts";
 import { ESQUEMA, ProveedorDeRespuestas } from "./respuesta";
 import { Diagnosticos } from "./diagnosticos";
@@ -40,7 +41,7 @@ const PLANTILLA = [
   "# @name repo",
   "GET {{base}}/repos/microsoft/vscode",
   "",
-  "### Roost sends the one above first, on its own.",
+  "### Assay sends the one above first, on its own.",
   "GET {{base}}/repos/microsoft/vscode/contributors",
   "X-Repo-Id: {{repo.response.body.$.id}}",
   "",
@@ -55,7 +56,7 @@ interface Ajustes {
 
 /** Se lee en cada envio: cambiar el ajuste surte efecto sin recargar. */
 function ajustes(): Ajustes {
-  const c = vscode.workspace.getConfiguration("roost");
+  const c = vscode.workspace.getConfiguration("assay");
   return {
     timeoutMs: c.get<number>("timeoutMs", 30_000),
     redactar: c.get<boolean>("redactSecrets", true),
@@ -77,6 +78,13 @@ const LENGUAJES = [
  */
 const almacenes = new Map<string, Almacen>();
 
+/**
+ * La sesion vive donde las respuestas y muere con ellas. Si se editara el
+ * login y se conservara la cookie, la peticion siguiente iria autenticada con
+ * una sesion que ya no corresponde a lo que pone en el fichero.
+ */
+const tarros = new Map<string, Tarro>();
+
 function almacenDe(uri: vscode.Uri): Almacen {
   const clave = uri.toString();
   let almacen = almacenes.get(clave);
@@ -87,8 +95,18 @@ function almacenDe(uri: vscode.Uri): Almacen {
   return almacen;
 }
 
+function tarroDe(uri: vscode.Uri): Tarro {
+  const clave = uri.toString();
+  let tarro = tarros.get(clave);
+  if (!tarro) {
+    tarro = new Tarro();
+    tarros.set(clave, tarro);
+  }
+  return tarro;
+}
+
 export function activate(contexto: vscode.ExtensionContext): void {
-  const salida = vscode.window.createOutputChannel("Roost", "http");
+  const salida = vscode.window.createOutputChannel("Assay", "http");
   contexto.subscriptions.push(salida);
 
   const entornos = new GestorDeEntornos(contexto, salida);
@@ -111,7 +129,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.seleccionarEntorno", () =>
+    vscode.commands.registerCommand("assay.selectEnvironment", () =>
       entornos.seleccionar()),
   );
 
@@ -123,6 +141,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
     vscode.workspace.onDidChangeTextDocument((evento) => {
       if (evento.document.languageId === "http") {
         almacenes.get(evento.document.uri.toString())?.limpiar();
+        tarros.get(evento.document.uri.toString())?.limpiar();
         // Al editar, los avisos de asertos dejan de corresponder a lo que hay.
         diagnosticos.limpiar(evento.document.uri);
       }
@@ -131,19 +150,20 @@ export function activate(contexto: vscode.ExtensionContext): void {
   contexto.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument((documento) => {
       almacenes.delete(documento.uri.toString());
+      tarros.delete(documento.uri.toString());
     }),
   );
 
   contexto.subscriptions.push(
     vscode.commands.registerCommand(
-      "roost.enviar",
+      "assay.send",
       (peticion?: HttpRequest, fichero?: HttpFile, uri?: vscode.Uri) =>
         enviar(peticion, fichero, uri, salida, entornos, respuestas, diagnosticos),
     ),
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.enviarBajoCursor", () => {
+    vscode.commands.registerCommand("assay.sendUnderCursor", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       const fichero = parse(editor.document.getText());
@@ -160,7 +180,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.nuevoFichero", async () => {
+    vscode.commands.registerCommand("assay.newRequestFile", async () => {
       // Un fichero de arranque con las tres cosas que hay que entender:
       // una peticion, un aserto y una cadena. Sin guardar todavia: el usuario
       // decide donde vive.
@@ -173,12 +193,13 @@ export function activate(contexto: vscode.ExtensionContext): void {
   );
 
   contexto.subscriptions.push(
-    vscode.commands.registerCommand("roost.limpiarCadena", () => {
+    vscode.commands.registerCommand("assay.resetChain", () => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) return;
       almacenes.get(editor.document.uri.toString())?.limpiar();
-      salida.appendLine("Chained responses cleared.");
-      void vscode.window.showInformationMessage("Roost: chain reset.");
+      tarros.get(editor.document.uri.toString())?.limpiar();
+      salida.appendLine("Chained responses and session cookies cleared.");
+      void vscode.window.showInformationMessage("Assay: chain reset.");
     }),
   );
 }
@@ -187,7 +208,7 @@ export function activate(contexto: vscode.ExtensionContext): void {
  * Ademas del boton, anota lo que la peticion va a hacer: cuantos asertos se
  * comprobaran y que dependencias se lanzaran antes.
  *
- * No es decoracion. Las dos funciones que diferencian a Roost -asertos y
+ * No es decoracion. Las dos funciones que diferencian a Assay -asertos y
  * cadena- son invisibles en un fichero de texto; anunciarlas donde el usuario
  * ya esta mirando es lo que convierte "otro cliente HTTP" en "ah, esto hace
  * tests".
@@ -209,7 +230,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       lentes.push(new vscode.CodeLens(rango, {
         title: "$(play) Send",
         tooltip: `${peticion.metodo} ${peticion.url}`,
-        command: "roost.enviar",
+        command: "assay.send",
         arguments: [peticion, fichero, documento.uri],
       }));
 
@@ -218,7 +239,7 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(beaker) ${n} ${n === 1 ? "assertion" : "assertions"}`,
           tooltip: peticion.asertos.map((a) => a.origen).join(SALTO),
-          command: "roost.enviar",
+          command: "assay.send",
           arguments: [peticion, fichero, documento.uri],
         }));
       }
@@ -229,8 +250,8 @@ class ProveedorDeLentes implements vscode.CodeLensProvider {
       if (dependencias.length > 0) {
         lentes.push(new vscode.CodeLens(rango, {
           title: `$(link) runs ${dependencias.join(", ")} first`,
-          tooltip: "Roost sends these automatically if they have not run yet",
-          command: "roost.enviar",
+          tooltip: "Assay sends these automatically if they have not run yet",
+          command: "assay.send",
           arguments: [peticion, fichero, documento.uri],
         }));
       }
@@ -250,6 +271,7 @@ async function enviar(
 ): Promise<void> {
   if (!peticion || !fichero) return;
   const almacen = uri ? almacenDe(uri) : new Almacen();
+  const tarro = uri ? tarroDe(uri) : new Tarro();
   const { timeoutMs, redactar } = ajustes();
   const oculta = (url: string) => (redactar ? redactarUrl(url) : url);
 
@@ -269,14 +291,15 @@ async function enviar(
         // Las dependencias primero. Se registran los nombres, nunca los valores:
         // un token en el panel acaba en una captura o en un fichero commiteado.
         const { ejecutadas } = await resolverDependencias(
-          peticion, fichero, almacen, (p) => ejecutar(p, { timeoutMs }), conVariables,
+          peticion, fichero, almacen,
+          (p) => ejecutar(p, { timeoutMs, tarro }), conVariables,
         );
         if (ejecutadas.length > 0) {
           salida.appendLine(`  cadena: ${ejecutadas.join(" -> ")}`);
         }
 
         const resuelta = aplicar(conVariables(peticion), almacen);
-        const respuesta = await ejecutar(resuelta, { timeoutMs });
+        const respuesta = await ejecutar(resuelta, { timeoutMs, tarro });
 
         if (peticion.nombre) almacen.guardar(peticion.nombre, respuesta);
 
@@ -294,7 +317,11 @@ async function enviar(
 
         // Un servidor puede devolverte el secreto que le mandaste: httpbin lo
         // hace, y muchos endpoints de depuracion tambien.
-        const secretos = redactar && uri ? await entornos.secretosPara(uri) : [];
+        // Los valores de cookie entran aqui: una cookie de sesion es tan
+        // sensible como un token, y el panel se puede guardar o capturar.
+        const secretos = redactar
+          ? [...(uri ? await entornos.secretosPara(uri) : []), ...tarro.valores()]
+          : [];
 
         const destino = respuestas.publicar(resuelta, respuesta, resultados,
                                             { redactar, secretos });
@@ -333,4 +360,5 @@ function acortar(url: string, max = 60): string {
 
 export function deactivate(): void {
   almacenes.clear();
+  tarros.clear();
 }

@@ -1,0 +1,10 @@
+# Los binarios no se tocan nunca como texto. Un renombrado con sed les quito
+# el \r de la firma PNG y el paquete salio con el icono roto sin que ningun
+# test se enterara. Hay un test de integridad, esto es la segunda cerradura.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.vsix binary
+*.woff binary
+*.woff2 binary

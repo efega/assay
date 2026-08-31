@@ -42,6 +42,32 @@ en cuanto alguien instala la extension.
 El guion tambien falla si se ejecutan **cero** tests. vscode-test sale con
 codigo 0 cuando no encuentra ninguno, y un verde falso es peor que un fallo.
 
+### Y un cuarto, fuera de `npm test`
+
+```
+npm run humo
+```
+
+`scripts/humo-real.mjs` ejercita el nucleo contra httpbin y postman-echo: TLS
+de verdad, gzip, respuestas de 100 KB, redirecciones, latencia y cookies
+reales. **No esta en `npm test` a proposito**, porque un test que depende de un
+servicio ajeno falla cuando falla el servicio, y un test que falla por causas
+ajenas se acaba ignorando.
+
+Lo que descubre es distinto de lo que descubren los otros tres: los locales
+comprueban que la logica es correcta, este comprueba que sobrevive a internet.
+
+## Integridad del paquete
+
+`test/unit/paquete.test.ts` comprueba la firma de los PNG, byte a byte,
+incluido el `\r`. Existe por un fallo real: un `sed` de renombrado corrio sobre
+todos los ficheros versionados y le quito ese byte al icono y a la captura. Los
+167 tests siguieron en verde porque ninguno miraba binarios, y el `.vsix` se
+genero con el icono roto.
+
+La regla que sale de ahi: **cualquier cosa que se publique tiene que tener un
+test que la mire**, incluidas las que no son codigo.
+
 ## Estructura
 
 | | |
@@ -64,7 +90,7 @@ Los modulos de `src/` no importan `vscode` salvo `extension.ts` y
 de una ventana real.
 
 ```bash
-ROOST_DEMO_PERFIL=/tmp/perfil npx vscode-test --config .vscode-test-demo.mjs
+ASSAY_DEMO_PERFIL=/tmp/perfil npx vscode-test --config .vscode-test-demo.mjs
 ```
 
 `test/demo/demo.test.ts` abre un `.http`, levanta un servidor local con datos
@@ -81,5 +107,22 @@ un build a medias y fallan de forma aparentemente aleatoria. Paso una vez.
 
 Las cadenas que ve el usuario estan en **ingles**: el mercado son 7,5 millones
 de desarrolladores anglofonos. Los comentarios y los nombres internos estan en
-espanyol, y no los ve nadie de fuera.
+espanyol.
+
+"Ingles" incluye mas de lo que parece, y por eso hay tests que lo vigilan:
+
+| | |
+|---|---|
+| Cadenas de la interfaz | ingles |
+| Sintaxis que escribe el usuario (`# @assert status`) | ingles, y **solo** ingles: hubo alias en castellano que no documentaba nadie |
+| Ids de comando y de ajuste | ingles: salen en `keybindings.json` y en la pantalla de atajos |
+| Ficheros que se empaquetan (`samples/`, `media/steps/`) | ingles, nombre de fichero incluido |
+| Scopes de TextMate | ingles |
+| Comentarios, identificadores, claves internas de la gramatica | castellano |
+
+`removeComments` esta activado, asi que los comentarios en castellano **no
+viajan dentro del `.vsix`**. Sin esa opcion viajaban todos, y esta seccion
+afirmaba lo contrario.
+
+Y nada de rayas largas en texto publicado.
 

@@ -17,7 +17,7 @@ const SALTO = String.fromCharCode(10);
 let servidor: http.Server;
 let base = "";
 
-suite("Roost · envio real", () => {
+suite("Assay · envio real", () => {
   suiteSetup(async () => {
     servidor = http.createServer((req, res) => {
       const url = new URL(req.url ?? "/", "http://localhost");
@@ -144,7 +144,7 @@ suite("Roost · envio real", () => {
     await esperarRespuesta((t) => t.includes("HTTP 200"));
 
     const panel = vscode.window.visibleTextEditors
-      .find((e) => e.document.uri.scheme === "roost-response");
+      .find((e) => e.document.uri.scheme === "assay-response");
     assert.ok(panel, "no se abrio el panel de respuesta");
     assert.equal(panel.document.isUntitled, false, "no debe ser un buffer sin guardar");
 
@@ -181,7 +181,7 @@ suite("Roost · envio real", () => {
     assert.deepEqual(lineas, [2, 3], "en las lineas de los que fallan, no en otras");
 
     for (const d of avisos) {
-      assert.equal(d.source, "Roost");
+      assert.equal(d.source, "Assay");
       assert.equal(d.severity, vscode.DiagnosticSeverity.Warning,
         "un aserto fallido informa sobre el servidor, no es un error del fichero");
       assert.match(d.message, /Assertion failed/);
@@ -226,6 +226,6 @@ suite("Roost · envio real", () => {
 
     // Y la extension sigue viva.
     const comandos = await vscode.commands.getCommands(true);
-    assert.ok(comandos.includes("roost.enviar"));
+    assert.ok(comandos.includes("assay.send"));
   });
 });

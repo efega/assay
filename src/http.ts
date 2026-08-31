@@ -9,6 +9,7 @@
  */
 
 import type { HttpRequest } from "./parser";
+import type { Tarro } from "./cookies";
 
 export interface HttpResponse {
   estado: number;
@@ -35,9 +36,9 @@ const SIN_CUERPO = new Set(["GET", "HEAD", "OPTIONS", "TRACE", "CONNECT"]);
 
 export async function ejecutar(
   peticion: HttpRequest,
-  opciones: { timeoutMs?: number; señal?: AbortSignal } = {},
+  opciones: { timeoutMs?: number; señal?: AbortSignal; tarro?: Tarro } = {},
 ): Promise<HttpResponse> {
-  const { timeoutMs = 30_000 } = opciones;
+  const { timeoutMs = 30_000, tarro } = opciones;
 
   let url: URL;
   try {
@@ -61,6 +62,18 @@ export async function ejecutar(
     }
   }
 
+  // La sesion se anyade sola, pero una cabecera Cookie escrita a mano gana:
+  // lo explicito manda sobre lo implicito.
+  const cabecerasEnvio = { ...peticion.cabeceras };
+  if (tarro) {
+    const yaPuesta = Object.keys(cabecerasEnvio)
+      .some((n) => n.toLowerCase() === "cookie");
+    if (!yaPuesta) {
+      const galletas = tarro.cabeceraPara(url);
+      if (galletas) cabecerasEnvio["Cookie"] = galletas;
+    }
+  }
+
   const control = new AbortController();
   const temporizador = setTimeout(() => control.abort(), timeoutMs);
   if (opciones.señal) {
@@ -71,7 +84,7 @@ export async function ejecutar(
   try {
     const respuesta = await fetch(url, {
       method: peticion.metodo,
-      headers: peticion.cabeceras,
+      headers: cabecerasEnvio,
       body: SIN_CUERPO.has(peticion.metodo) ? undefined : peticion.cuerpo,
       signal: control.signal,
       redirect: "follow",
@@ -79,6 +92,11 @@ export async function ejecutar(
 
     const cuerpo = await respuesta.text();
     const ms = Date.now() - inicio;
+
+    // getSetCookie y no forEach: cuando hay varias Set-Cookie, forEach las
+    // junta en una sola cadena separada por comas, y como las fechas Expires
+    // llevan comas, esa cadena ya no se puede volver a partir sin romperla.
+    if (tarro) tarro.guardar(respuesta.headers.getSetCookie(), url);
 
     const cabeceras: Record<string, string> = {};
     respuesta.headers.forEach((valor, clave) => { cabeceras[clave] = valor; });

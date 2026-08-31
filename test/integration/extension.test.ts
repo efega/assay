@@ -13,7 +13,7 @@ import * as path from "node:path";
 import * as vscode from "vscode";
 
 const RAIZ = path.resolve(__dirname, "..", "..", "..");
-const EJEMPLO = path.join(RAIZ, "samples", "ejemplo.http");
+const EJEMPLO = path.join(RAIZ, "samples", "example.http");
 const METODO = /^(GET|POST|PUT|PATCH|DELETE|HEAD|OPTIONS)\s/;
 
 /** Solo las lentes de envio: ahora tambien hay de asertos y de cadena. */
@@ -26,9 +26,9 @@ async function abrirEjemplo(): Promise<vscode.TextDocument> {
   return documento;
 }
 
-suite("Roost", () => {
+suite("Assay", () => {
   test("la extension se activa", async () => {
-    const ext = vscode.extensions.getExtension("efega.roost");
+    const ext = vscode.extensions.getExtension("efega.assay");
     assert.ok(ext, "no se encuentra la extension en el host");
     await ext.activate();
     assert.equal(ext.isActive, true);
@@ -36,18 +36,18 @@ suite("Roost", () => {
 
   test("registra sus comandos", async () => {
     const comandos = await vscode.commands.getCommands(true);
-    assert.ok(comandos.includes("roost.enviar"), "falta roost.enviar");
+    assert.ok(comandos.includes("assay.send"), "falta assay.send");
     assert.ok(
-      comandos.includes("roost.enviarBajoCursor"),
-      "falta roost.enviarBajoCursor",
+      comandos.includes("assay.sendUnderCursor"),
+      "falta assay.sendUnderCursor",
     );
     assert.ok(
-      comandos.includes("roost.limpiarCadena"),
-      "falta roost.limpiarCadena",
+      comandos.includes("assay.resetChain"),
+      "falta assay.resetChain",
     );
     assert.ok(
-      comandos.includes("roost.seleccionarEntorno"),
-      "falta roost.seleccionarEntorno",
+      comandos.includes("assay.selectEnvironment"),
+      "falta assay.selectEnvironment",
     );
   });
 
@@ -78,7 +78,7 @@ suite("Roost", () => {
     );
 
     for (const lente of envio) {
-      assert.equal(lente.command?.command, "roost.enviar");
+      assert.equal(lente.command?.command, "assay.send");
       const texto = documento.lineAt(lente.range.start.line).text;
       assert.match(
         texto,
@@ -140,8 +140,8 @@ suite("Roost", () => {
       .map((l) => (l.command?.arguments?.[0] as { nombre?: string })?.nombre)
       .filter(Boolean);
     assert.ok(
-      nombradas.includes("origen"),
-      `el ejemplo define "# @name origen"; llegaron: ${JSON.stringify(nombradas)}`,
+      nombradas.includes("source"),
+      `el ejemplo define "# @name source"; llegaron: ${JSON.stringify(nombradas)}`,
     );
   });
 
@@ -152,7 +152,7 @@ suite("Roost", () => {
     // Los ficheros se crean aqui a proposito. El de secretos esta en
     // .gitignore -como debe-, asi que un test que dependiera del de samples/
     // fallaria en cualquier clon recien hecho del repositorio.
-    const dir = path.join(os.tmpdir(), `roost-env-${Date.now()}`);
+    const dir = path.join(os.tmpdir(), `assay-env-${Date.now()}`);
     await vscode.workspace.fs.createDirectory(vscode.Uri.file(dir));
     const escribir = (nombre: string, datos: unknown) =>
       vscode.workspace.fs.writeFile(

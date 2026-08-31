@@ -40,7 +40,7 @@ async function abrir(contenido: string) {
   return d;
 }
 
-suite("Roost bajo estres", () => {
+suite("Assay bajo estres", () => {
   suiteSetup(async () => {
     servidor = http.createServer((req, res) => {
       const u = new URL(req.url ?? "/", "http://localhost");
@@ -112,7 +112,7 @@ suite("Roost bajo estres", () => {
     let paneles: vscode.TextDocument[] = [];
     while (Date.now() < limite && paneles.length < 10) {
       paneles = vscode.workspace.textDocuments.filter(
-        (t) => t.uri.scheme === "roost-response");
+        (t) => t.uri.scheme === "assay-response");
       if (paneles.length < 10) await new Promise((r) => setTimeout(r, 200));
     }
     assert.ok(paneles.length >= 5,

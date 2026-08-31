@@ -11,6 +11,7 @@ import assert from "node:assert/strict";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { HttpError, ejecutar, formatear, redactarValores } from "../../src/http";
+import { Tarro } from "../../src/cookies";
 import { parse } from "../../src/parser";
 
 let servidor: http.Server;
@@ -49,6 +50,20 @@ before(async () => {
         "x-normal": "visible",
       });
       res.end('{"ok":true}');
+      return;
+    }
+    if (url.pathname === "/login") {
+      res.setHeader("set-cookie", [
+        "sid=SESION-ABC; Path=/",
+        "csrf=TOKEN-XYZ; Path=/",
+      ]);
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end('{"ok":true}');
+      return;
+    }
+    if (url.pathname === "/perfil") {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ cookie: req.headers.cookie ?? null }));
       return;
     }
     if (url.pathname === "/texto") {
@@ -220,4 +235,43 @@ test("no enmascara valores cortos, que destrozarian la salida", () => {
 test("enmascara todas las apariciones de un secreto", () => {
   const salida = redactarValores("a=SECRETO-LARGO b=SECRETO-LARGO", ["SECRETO-LARGO"]);
   assert.equal(salida, "a=*** b=***");
+});
+
+test("sin tarro no se manda ninguna cookie", async () => {
+  await ejecutar(peticionDe(`GET ${base}/login`));
+  const r = await ejecutar(peticionDe(`GET ${base}/perfil`));
+  assert.equal(JSON.parse(r.cuerpo).cookie, null);
+});
+
+test("con tarro, el login autentica la peticion siguiente", async () => {
+  const tarro = new Tarro();
+  await ejecutar(peticionDe(`GET ${base}/login`), { tarro });
+  const r = await ejecutar(peticionDe(`GET ${base}/perfil`), { tarro });
+  const recibida: string = JSON.parse(r.cuerpo).cookie;
+  assert.ok(recibida.includes("sid=SESION-ABC"), recibida);
+  assert.ok(recibida.includes("csrf=TOKEN-XYZ"), recibida);
+});
+
+test("las dos Set-Cookie llegan por separado, no pegadas con coma", async () => {
+  const tarro = new Tarro();
+  await ejecutar(peticionDe(`GET ${base}/login`), { tarro });
+  assert.equal(tarro.tamano, 2);
+});
+
+test("una cabecera Cookie escrita a mano gana al tarro", async () => {
+  const tarro = new Tarro();
+  await ejecutar(peticionDe(`GET ${base}/login`), { tarro });
+  const r = await ejecutar(
+    peticionDe(`GET ${base}/perfil
+Cookie: mia=1`), { tarro });
+  assert.equal(JSON.parse(r.cuerpo).cookie, "mia=1");
+});
+
+test("los valores de sesion se pueden enmascarar en la salida", async () => {
+  const tarro = new Tarro();
+  await ejecutar(peticionDe(`GET ${base}/login`), { tarro });
+  const r = await ejecutar(peticionDe(`GET ${base}/perfil`), { tarro });
+  const limpio = redactarValores(r.cuerpo, tarro.valores());
+  assert.ok(!limpio.includes("SESION-ABC"), limpio);
+  assert.ok(!limpio.includes("TOKEN-XYZ"), limpio);
 });

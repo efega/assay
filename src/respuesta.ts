@@ -17,7 +17,7 @@ import type { HttpResponse } from "./http";
 import { formatear, redactarValores } from "./http";
 import { resumir, type ResultadoAserto } from "./asserts";
 
-export const ESQUEMA = "roost-response";
+export const ESQUEMA = "assay-response";
 
 /** Trocito de ruta para la pestanya: `/api/users/42` -> `/users/42`. */
 function rutaCorta(url: string, max = 28): string {

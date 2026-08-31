@@ -20,7 +20,7 @@ export class Diagnosticos {
   private readonly coleccion: vscode.DiagnosticCollection;
 
   constructor() {
-    this.coleccion = vscode.languages.createDiagnosticCollection("roost");
+    this.coleccion = vscode.languages.createDiagnosticCollection("assay");
   }
 
   /**
@@ -52,10 +52,10 @@ export class Diagnosticos {
         rango,
         r.motivo
           ? `Assertion failed: ${r.aserto.origen} (${r.motivo})`
-          : `Assertion failed: ${r.aserto.origen} — got ${r.obtenido}`,
+          : `Assertion failed: ${r.aserto.origen}, got ${r.obtenido}`,
         vscode.DiagnosticSeverity.Warning,
       );
-      d.source = "Roost";
+      d.source = "Assay";
       nuevas.push(d);
     }
 
